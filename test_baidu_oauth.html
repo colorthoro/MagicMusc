@@ -14,7 +14,10 @@
             border: 1px solid gray;
             border-radius: 10px;
             width: fit-content;
-            margin: 0 auto;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
         }
 
         .input-row {
@@ -40,7 +43,7 @@
             <iframe v-if="frameOpened" name="getCodeframe" frameborder="0"></iframe>
         </div>
         <div class="input-row">
-            <label for="oauthCode">输入授权码：</label>
+            <label for="oauthCode">输入授权码:&nbsp;</label>
             <input type="text" id="oauthCode" v-model="oauthCode">
         </div>
 
