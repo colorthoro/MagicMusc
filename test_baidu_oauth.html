@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.2.0-beta1/css/bootstrap.css" rel="stylesheet">
+    <script src="https://unpkg.com/vue@next"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/axios/1.0.0-alpha.1/axios.js"></script>
+    <title>Document</title>
+    <style>
+        #app {
+            border: 1px solid gray;
+            border-radius: 10px;
+            width: fit-content;
+            margin: 0 auto;
+        }
+
+        .input-row {
+            display: block;
+            text-align: center;
+            margin: 1em;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="app">
+        <div class="input-row">
+            <a :href="getOauthCode" target="_blank">获取百度账号授权</a>
+        </div>
+        <div class="input-row">
+            <label for="oauthCode">输入授权码：</label>
+            <input type="text" id="oauthCode" v-model="oauthCode">
+        </div>
+    </div>
+
+    <script>
+        result = {
+            "expires_in": 2592000,
+            "refresh_token": "122.a3248099c56095f2a928b78adb508fd3.YBv1FrjykMDnePGA8tAc57JqDAKY_kfOR1fOIv8.ni76GA",
+            "access_token": "121.e68e292f9a8a8e6a0ef8cfd0619e744f.Ysi-DssDkarINGL0kFOlGc-yLjhs9rp6hNFSKDT.QbwjFw",
+            "session_secret": "",
+            "session_key": "",
+            "scope": "basic netdisk"
+        }
+        config = {
+            AppID: '27686924',
+            AppKey: '34UWaA1onXHBkGerDkc5Rzf6QQaTtQf1',
+            SecretKey: 'fg0cWxBrZgUHnmhQdGXgGR6kwOHjtGRi',
+            SignKey: 'M8TSSQ~m6E70vN1FHPd^f9uHaU-LhZrF'
+        }
+        const app = Vue.createApp({
+            data() {
+                return {
+                    oauthCode: '',
+                    getOauthCode: axios.getUri({
+                        method: 'get',
+                        url: "http://openapi.baidu.com/oauth/2.0/authorize",
+                        params: {
+                            response_type: 'code',
+                            client_id: config.AppKey,  // AppKey
+                            redirect_uri: 'oob',  // 授权回调地址，设为 oob 时百度提供默认回调
+                            scope: 'basic,netdisk',
+                            device_id: config.AppID,  // AppID
+                        }
+                    }),
+
+                }
+            },
+            computed: {
+                getOauthToken() {
+                    return axios.getUri({
+                        method: 'get',
+                        url: "https://openapi.baidu.com/oauth/2.0/token",
+                        params: {
+                            grant_type: 'authorization_code',
+                            code: this.oauthCode,
+                            client_id: config.AppKey,
+                            client_secret: config.SecretKey,
+                            redirect_uri: 'oob',
+                        }
+                    })
+                }
+            },
+            watch: {
+                oauthCode: {
+                    handler(newV, oldV) {
+                        window.open(this.getOauthToken, '_blank')
+                    }
+                }
+            },
+        })
+        app.mount('#app')
+
+
+    </script>
+</body>
+
+</html>
