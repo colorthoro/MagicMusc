@@ -22,6 +22,11 @@
             text-align: center;
             margin: 1em;
         }
+
+        .input-row>iframe {
+            width: 80vw;
+            height: 80vh;
+        }
     </style>
 </head>
 
@@ -29,12 +34,16 @@
 
     <div id="app">
         <div class="input-row">
-            <a :href="getOauthCode" target="_blank">获取百度账号授权</a>
+            <a :href="getOauthCode" target="getCodeframe" @click="openFrame">获取百度账号授权</a>
+        </div>
+        <div class="input-row">
+            <iframe v-if="frameOpened" name="getCodeframe" frameborder="0"></iframe>
         </div>
         <div class="input-row">
             <label for="oauthCode">输入授权码：</label>
             <input type="text" id="oauthCode" v-model="oauthCode">
         </div>
+
     </div>
 
     <script>
@@ -55,6 +64,7 @@
         const app = Vue.createApp({
             data() {
                 return {
+                    frameOpened: false,
                     oauthCode: '',
                     getOauthCode: axios.getUri({
                         method: 'get',
@@ -65,6 +75,8 @@
                             redirect_uri: 'oob',  // 授权回调地址，设为 oob 时百度提供默认回调
                             scope: 'basic,netdisk',
                             device_id: config.AppID,  // AppID
+                            qrcode: 1,
+                            force_login: 1,
                         }
                     }),
 
@@ -83,6 +95,11 @@
                             redirect_uri: 'oob',
                         }
                     })
+                }
+            },
+            methods: {
+                openFrame() {
+                    this.frameOpened = true
                 }
             },
             watch: {
