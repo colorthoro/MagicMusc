@@ -74,6 +74,7 @@
   - onedrive
   - 百度网盘
   - 阿里云盘
+    - [Aligo](https://github.com/foyoux/aligo "https://github.com/foyoux/aligo")
 - 后端（待定）
   - 数据库：解决永久化存储问题
   - 代理：解决跨域问题
