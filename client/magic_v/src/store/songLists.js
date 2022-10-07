@@ -7,9 +7,38 @@ let testSong = {
     "parent_file_id": "60b7b3a6bfa47971afc44b4db8e4321d68d2a4cf",
     "size": 13395442,
     "status": "available"
+};
+
+function replacer(key, value) {
+    if (value instanceof Map) {
+        return {
+            dataType: 'Map',
+            value: Array.from(value.entries()), // or with spread: value: [...value]
+        };
+    } else {
+        return value;
+    }
+}
+
+function reviver(key, value) {
+    if (typeof value === 'object' && value !== null) {
+        if (value.dataType === 'Map') {
+            return new Map(value.value);
+        }
+    }
+    return value;
 }
 
 const useSongListsStore = defineStore('songLists', {
+    persist: {
+        afterRestore: (ctx) => {
+            console.log(`piniaPluginPersistedstate 恢复了 store(${ctx.store.$id}) 的数据`);
+        },
+        serializer: {
+            serialize: value => JSON.stringify(value, replacer),
+            deserialize: value => JSON.parse(value, reviver)
+        }
+    },
     state: () => ({
         allSongs: new Map([[testSong.file_id, testSong]]),
         lostSongs: new Map(),
@@ -26,7 +55,7 @@ const useSongListsStore = defineStore('songLists', {
     actions: {
         putIntoList({ songs, listName }) {
             // console.log(songs)
-            console.log(this);
+            // console.log(this);
             let targetList = this.targetList(listName);
             if (!targetList) return;
             let k = 0;
