@@ -5,9 +5,18 @@
                 点我获取全部云音乐
             </button>
             <div class="all">
-                <div class="song" v-for="song of songLists.all.values()" :key="song.file_id">
+                <div class="song" v-for="song of allSongs.values()" :key="song.file_id">
                     {{song.name}}
-                    <button @click="delFromList({id:song.file_id, listName:'all'})">
+                    <button @click="delFromList({id:song.file_id, listName:'allSongs'})">
+                        删除
+                    </button>
+                </div>
+            </div>
+            <div class="bin">
+                以下是回收站文件
+                <div class="song" v-for="song of binSongs.values()" :key="song.file_id">
+                    {{song.name}}
+                    <button @click="delFromList({id:song.file_id, listName:'binSongs'})">
                         删除
                     </button>
                 </div>
@@ -18,7 +27,7 @@
 
 <script>
 import {mapState, mapActions} from 'pinia'
-import {useSongListsStore} from '../stores/songLists'
+import useSongListsStore from '../store/songLists'
 
 export default {
     name:'SongList',
@@ -28,7 +37,7 @@ export default {
         }
     },
     computed: {
-        ...mapState(useSongListsStore, ['songLists']),
+        ...mapState(useSongListsStore, ['allSongs', 'lostSongs', 'binSongs']),
     },
     methods: {
         ...mapActions(useSongListsStore, ['delFromList', 'getAllSongsFromCloud']),
