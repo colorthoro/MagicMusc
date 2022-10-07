@@ -21,6 +21,7 @@
                     </button>
                 </div>
             </div>
+            <button class="control" @click="clearList({listName:'binSongs'})">点我删除回收站全部音乐</button>
         </div>
     </div>
 </template>
@@ -40,7 +41,7 @@ export default {
         ...mapState(useSongListsStore, ['allSongs', 'lostSongs', 'binSongs']),
     },
     methods: {
-        ...mapActions(useSongListsStore, ['delFromList', 'getAllSongsFromCloud']),
+        ...mapActions(useSongListsStore, ['delFromList', 'clearList','getAllSongsFromCloud']),
     },
 }
 </script>

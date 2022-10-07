@@ -82,6 +82,14 @@ const useSongListsStore = defineStore('songLists', {
             }
             return targetList.delete(id);
         },
+        clearList({ listName }) {
+            let targetList = this.targetList(listName);
+            if (!targetList) return false;
+            let confirm = window.confirm(`确认清空 ${listName} 吗？`);
+            if (!confirm) return false;
+            this.$state[listName] = new Map();
+            return true;
+        },
         async getAllSongsFromCloud() {
             let res = await axios.get('api/scanMusic');
             this.putIntoList({ songs: res.data, listName: 'allSongs' });
