@@ -1,12 +1,15 @@
 <template>
     <div>
         <div class="container">
-            <div class="control" @click="getAllSongsFromCloud">
+            <button class="control" @click="getAllSongsFromCloud">
                 点我获取全部云音乐
-            </div>
+            </button>
             <div class="all">
-                <div class="song" v-for="song in songLists.all.list" :key="song.file_id">
+                <div class="song" v-for="song of songLists.all.values()" :key="song.file_id">
                     {{song.name}}
+                    <button @click="delFromList({id:song.file_id, listName:'all'})">
+                        删除
+                    </button>
                 </div>
             </div>
         </div>
@@ -14,7 +17,8 @@
 </template>
 
 <script>
-import {mapState, mapActions} from 'vuex'
+import {mapState, mapActions} from 'pinia'
+import {useSongListsStore} from '../stores/songLists'
 
 export default {
     name:'SongList',
@@ -24,10 +28,10 @@ export default {
         }
     },
     computed: {
-        ...mapState(['songLists']),
+        ...mapState(useSongListsStore, ['songLists']),
     },
     methods: {
-        ...mapActions(['getAllSongsFromCloud']),
+        ...mapActions(useSongListsStore, ['delFromList', 'getAllSongsFromCloud']),
     },
 }
 </script>
