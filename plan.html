@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<title>Markmap</title>
+<style>
+* {
+  margin: 0;
+  padding: 0;
+}
+#mindmap {
+  display: block;
+  width: 100vw;
+  height: 100vh;
+}
+</style>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/markmap-toolbar@0.14.3/dist/style.css">
+</head>
+<body>
+<svg id="mindmap"></svg>
+<script src="https://cdn.jsdelivr.net/npm/d3@6.7.0"></script><script src="https://cdn.jsdelivr.net/npm/markmap-view@0.14.3"></script><script src="https://cdn.jsdelivr.net/npm/markmap-toolbar@0.14.3/dist/index.umd.min.js"></script><script>(r => {
+                setTimeout(r);
+              })(() => {
+  const {
+    markmap,
+    mm
+  } = window;
+  const toolbar = new markmap.Toolbar();
+  toolbar.attach(mm);
+  const el = toolbar.render();
+  el.setAttribute('style', 'position:absolute;bottom:20px;right:20px');
+  document.body.append(el);
+})</script><script>((getMarkmap, getOptions, root, jsonOptions) => {
+        const markmap = getMarkmap();
+        window.mm = markmap.Markmap.create('svg#mindmap', (getOptions || markmap.deriveOptions)(jsonOptions), root);
+      })(() => window.markmap,null,{"type":"heading","depth":0,"payload":{"lines":[0,1]},"content":"私有云播放器","children":[{"type":"list_item","depth":1,"payload":{"lines":[2,3]},"content":"前端","children":[{"type":"list_item","depth":2,"payload":{"lines":[3,4]},"content":"技术栈","children":[{"type":"list_item","depth":3,"payload":{"lines":[4,5]},"content":"Vue（已基本掌握）"},{"type":"list_item","depth":3,"payload":{"lines":[5,6]},"content":"UniApp（待掌握）"},{"type":"list_item","depth":3,"payload":{"lines":[6,7]},"content":"Axios"},{"type":"list_item","depth":3,"payload":{"lines":[7,8]},"content":"M3U8"},{"type":"list_item","depth":3,"payload":{"lines":[8,9]},"content":"MySQL"},{"type":"list_item","depth":3,"payload":{"lines":[9,10]},"content":"JavaScript、HTML、CSS"}]},{"type":"list_item","depth":2,"payload":{"lines":[10,11]},"content":"界面","children":[{"type":"list_item","depth":3,"payload":{"lines":[11,12]},"content":"首页"},{"type":"list_item","depth":3,"payload":{"lines":[12,13]},"content":"搜索页"},{"type":"list_item","depth":3,"payload":{"lines":[13,14]},"content":"歌曲元素","children":[{"type":"list_item","depth":4,"payload":{"lines":[14,15]},"content":"歌手"},{"type":"list_item","depth":4,"payload":{"lines":[15,16]},"content":"歌曲"},{"type":"list_item","depth":4,"payload":{"lines":[16,17]},"content":"歌单"}]},{"type":"list_item","depth":3,"payload":{"lines":[17,18]},"content":"播放页","children":[{"type":"list_item","depth":4,"payload":{"lines":[18,19]},"content":"播放控件","children":[{"type":"list_item","depth":5,"payload":{"lines":[19,20]},"content":"播放列表"},{"type":"list_item","depth":5,"payload":{"lines":[20,21]},"content":"进度条"},{"type":"list_item","depth":5,"payload":{"lines":[21,22]},"content":"开始/暂停"},{"type":"list_item","depth":5,"payload":{"lines":[22,23]},"content":"上一首"},{"type":"list_item","depth":5,"payload":{"lines":[23,24]},"content":"下一首"},{"type":"list_item","depth":5,"payload":{"lines":[24,25]},"content":"切歌模式"}]},{"type":"list_item","depth":4,"payload":{"lines":[25,26]},"content":"歌词"}]},{"type":"list_item","depth":3,"payload":{"lines":[26,27]},"content":"设置页","children":[{"type":"list_item","depth":4,"payload":{"lines":[27,28]},"content":"云"},{"type":"list_item","depth":4,"payload":{"lines":[28,29]},"content":"其它设置（待定）"}]},{"type":"list_item","depth":3,"payload":{"lines":[29,30]},"content":"个人资料页","children":[{"type":"list_item","depth":4,"payload":{"lines":[30,31]},"content":"头像"},{"type":"list_item","depth":4,"payload":{"lines":[31,32]},"content":"背景"},{"type":"list_item","depth":4,"payload":{"lines":[32,33]},"content":"歌单展示"}]},{"type":"list_item","depth":3,"payload":{"lines":[33,34]},"content":"关于页"},{"type":"list_item","depth":3,"payload":{"lines":[34,35]},"content":"信息告警页"}]},{"type":"list_item","depth":2,"payload":{"lines":[35,36]},"content":"业务逻辑","children":[{"type":"list_item","depth":3,"payload":{"lines":[36,37]},"content":"扫描云文件——发现音乐"},{"type":"list_item","depth":3,"payload":{"lines":[37,38]},"content":"搜索","children":[{"type":"list_item","depth":4,"payload":{"lines":[38,39]},"content":"内部搜索","children":[{"type":"list_item","depth":5,"payload":{"lines":[39,40]},"content":"歌曲"},{"type":"list_item","depth":5,"payload":{"lines":[40,41]},"content":"歌单"}]},{"type":"list_item","depth":4,"payload":{"lines":[41,42]},"content":"对接平台搜索"}]},{"type":"list_item","depth":3,"payload":{"lines":[42,43]},"content":"播放","children":[{"type":"list_item","depth":4,"payload":{"lines":[43,44]},"content":"歌曲","children":[{"type":"list_item","depth":5,"payload":{"lines":[44,45]},"content":"云链接信息","children":[{"type":"list_item","depth":6,"payload":{"lines":[45,46]},"content":"有效性检查"},{"type":"list_item","depth":6,"payload":{"lines":[46,47]},"content":"下载与缓存"}]},{"type":"list_item","depth":5,"payload":{"lines":[47,48]},"content":"歌单信息"}]},{"type":"list_item","depth":4,"payload":{"lines":[48,49]},"content":"歌词","children":[{"type":"list_item","depth":5,"payload":{"lines":[49,50]},"content":"来源"},{"type":"list_item","depth":5,"payload":{"lines":[50,51]},"content":"绑定滚动"}]},{"type":"list_item","depth":4,"payload":{"lines":[51,52]},"content":"控制","children":[{"type":"list_item","depth":5,"payload":{"lines":[52,53]},"content":"创建播放列表","children":[{"type":"list_item","depth":6,"payload":{"lines":[53,54]},"content":"从当前激活的列表创建（歌单，排行榜，歌手）"}]},{"type":"list_item","depth":5,"payload":{"lines":[54,55]},"content":"切换歌曲","children":[{"type":"list_item","depth":6,"payload":{"lines":[55,56]},"content":"顺序"},{"type":"list_item","depth":6,"payload":{"lines":[56,57]},"content":"随机"},{"type":"list_item","depth":6,"payload":{"lines":[57,58]},"content":"单曲"}]},{"type":"list_item","depth":5,"payload":{"lines":[58,59]},"content":"开始"},{"type":"list_item","depth":5,"payload":{"lines":[59,60]},"content":"暂停"}]}]},{"type":"list_item","depth":3,"payload":{"lines":[60,61]},"content":"最近播放"},{"type":"list_item","depth":3,"payload":{"lines":[61,62]},"content":"管理本地歌单","children":[{"type":"list_item","depth":4,"payload":{"lines":[62,63]},"content":"基础歌单","children":[{"type":"list_item","depth":5,"payload":{"lines":[63,64]},"content":"全部"},{"type":"list_item","depth":5,"payload":{"lines":[64,65]},"content":"云链失效"},{"type":"list_item","depth":5,"payload":{"lines":[65,66]},"content":"回收站"}]}]},{"type":"list_item","depth":3,"payload":{"lines":[66,67]},"content":"歌单内部歌曲管理"},{"type":"list_item","depth":3,"payload":{"lines":[67,68]},"content":"歌曲管理映射到云文件（可暂不做）"},{"type":"list_item","depth":3,"payload":{"lines":[68,69]},"content":"账号","children":[{"type":"list_item","depth":4,"payload":{"lines":[69,70]},"content":"云接口授权"},{"type":"list_item","depth":4,"payload":{"lines":[70,71]},"content":"歌单信息"},{"type":"list_item","depth":4,"payload":{"lines":[71,72]},"content":"歌曲信息"}]}]}]},{"type":"list_item","depth":1,"payload":{"lines":[72,73]},"content":"接口","children":[{"type":"list_item","depth":2,"payload":{"lines":[73,74]},"content":"onedrive"},{"type":"list_item","depth":2,"payload":{"lines":[74,75]},"content":"百度网盘"},{"type":"list_item","depth":2,"payload":{"lines":[75,76]},"content":"阿里云盘","children":[{"type":"list_item","depth":3,"payload":{"lines":[76,77]},"content":"<a href=\"https://github.com/foyoux/aligo\" title=\"https://github.com/foyoux/aligo\">Aligo</a>"}]}]},{"type":"list_item","depth":1,"payload":{"lines":[77,78]},"content":"后端（待定）","children":[{"type":"list_item","depth":2,"payload":{"lines":[78,79]},"content":"数据库：解决永久化存储问题"},{"type":"list_item","depth":2,"payload":{"lines":[79,80]},"content":"代理：解决跨域问题"}]},{"type":"list_item","depth":1,"payload":{"lines":[80,81]},"content":"跨端","children":[{"type":"list_item","depth":2,"payload":{"lines":[81,82]},"content":"Web端"},{"type":"list_item","depth":2,"payload":{"lines":[82,83]},"content":"Android、小程序（UniApp）"}]}]},{})</script>
+</body>
+</html>
