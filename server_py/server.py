@@ -1,11 +1,11 @@
 from queue import Queue
 from time import sleep
-from flask import Flask, jsonify, request, session
+from flask import Flask, jsonify, request, session, Response
 from aligo import Aligo
 import re
 import json
 import string
-import random, time
+import random, time, os
 
 app = Flask(__name__)
 ali = Aligo()
@@ -55,8 +55,8 @@ def login():
 
 @app.route('/scanMusic')
 def scanMuic():
-    with open('test.json','r', encoding='utf-8') as f:
-        return jsonify(json.load(f))
+    # with open('test.json','r', encoding='utf-8') as f:
+    #     return jsonify(json.load(f))
     q = Queue()
     q.put('root')
     res = list()
@@ -71,14 +71,35 @@ def scanMuic():
                     print(item)
                     res.append({
                         'name': item.name,
+                        'mime_extension': item.mime_extension,
                         'file_id': item.file_id,
+                        'parent_file_id': item.parent_file_id,
                         'status': item.status, 
+                        'content_hash': item.content_hash,
+                        'download_url': item.download_url,
                         'size': item.size,
-                        'parent_file_id': item.parent_file_id
+                        'trashed': item.trashed,
                     })
-            sleep(0.5)
+            sleep(1)
         except Exception as e:
             print(e)
     return jsonify(res)
+
+
+@app.route('/dw', methods=['post'])
+def cache():
+    hash = request.json['hash']
+    url = request.json['url']
+    file_path = os.path.join(os.getcwd(), hash)
+    ali.download_file(file_path=file_path, url=url)
+    def send_chunk():  # 流式读取
+        store_path = file_path
+        with open(store_path, 'rb') as target_file:
+            while True:
+                chunk = target_file.read(20 * 1024 * 1024)  # 每次读取20M
+                if not chunk:
+                    break
+                yield chunk
+    return Response(send_chunk(), content_type='application/octet-stream')
 
 app.run()
