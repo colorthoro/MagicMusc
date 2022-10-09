@@ -76,7 +76,7 @@
   - 阿里云盘
     - [Aligo](https://github.com/foyoux/aligo "https://github.com/foyoux/aligo")
       - 授权方式：
-        - 前端权限管理方式待定
+        - 前端权限管理
         - 后端以用户id为名调用aligo的接口，返回阿里云登录二维码链接或直接获取配置成功激活
         - 前端展现后端返回的二维码或登录成功
 - 后端（待定）
