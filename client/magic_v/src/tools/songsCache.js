@@ -18,6 +18,9 @@ export async function fetchMusic(hash, url) {
         data: { hash, url },
         responseType: "blob",
     });
+    if (res.data.type !== 'application/octet-stream') {
+        throw await res.data.text();
+    }
     console.log('获取文件成功，准备存入IndexedDB', hash, res.data);
     dbPut(hash, res.data);
     return res.data;
@@ -61,10 +64,21 @@ export class Song {
         }
         this.tags = [];
         this.valid = valid;
+        this.lost = false;
     }
     async fetch() {
-        let res = await fetchMusic(this.content_hash, this.download_url);
-        return res.file;
+        try {
+            let res = await fetchMusic(this.content_hash, this.download_url);
+            return res.file;
+        } catch (e) {
+            if (e === '无效下载链接') {
+                this.update();
+                if (!this.lost) this.fetch();
+            }
+        }
+    }
+    async update() {
+        // 根据file_id重新获取文件信息，比对download_url，不同则赋值，并改变this.lost
     }
 }
 
