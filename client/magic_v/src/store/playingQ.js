@@ -48,13 +48,13 @@ export default defineStore('playingQ', {
                 this.audio.pause();
                 URL.revokeObjectURL(this.audio.src);
             }
-            console.log('准备播放', songOrSongs);
             this.addToPlaying(songOrSongs);
             let targetSong = this.now;
             if (!targetSong) {
                 console.log('请先选择歌曲吧！');
                 return;
             }
+            console.log('准备获取', songOrSongs);
             let blob = await targetSong.fetch();
             console.log('即将开始播放', blob);
             this.recordPlayed(targetSong);
