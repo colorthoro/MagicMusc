@@ -1,5 +1,6 @@
 import axios from "axios";
 import Dexie from "dexie";
+
 const db = new Dexie("magic_music");
 db.version(1).stores({
     songs: "++id, &content_hash"
@@ -19,11 +20,12 @@ export async function fetchMusic(hash, url) {
     });
     console.log('获取文件成功，准备存入IndexedDB', hash, res.data);
     dbPut(hash, res.data);
+    return res.data;
 }
 
 export async function dbPut(content_hash, blob) {
     if (await dbGet(content_hash)) {
-        console.log('already in the IndexedDB!');
+        console.log('already in the IndexedDB!', blob);
         return;
     }
     await db.songs.put({
@@ -35,7 +37,8 @@ export async function dbPut(content_hash, blob) {
 
 export async function dbGet(content_hash) {
     let res = await db.songs.get({ content_hash: content_hash });
-    console.log(res);
+    if (res) console.log('successed to get it from IndexedDB', res);
+    else console.log('not in the IndexedDB!');
     return res;
 }
 

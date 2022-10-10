@@ -12,11 +12,7 @@
           >
             删除
           </button>
-          <button
-            @click="songDb.fetchMusic(song.content_hash, song.download_url)"
-          >
-            获取
-          </button>
+          <button @click="song.fetch()">获取</button>
         </div>
       </div>
       <div class="bin">
@@ -33,7 +29,6 @@
       <button class="control" @click="clearList({ listName: 'binSongs' })">
         点我删除回收站全部音乐
       </button>
-      <button @click="testDownload">点我尝试下载文件</button>
     </div>
   </div>
 </template>

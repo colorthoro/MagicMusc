@@ -1,5 +1,33 @@
 import axios from 'axios';
 import { defineStore } from 'pinia';
+import { fetchMusic } from '../tools/songsCache'
+
+class Song {
+    constructor(originObject) {
+        let list = [
+            'name', 'mime_extension', 'file_id',
+            'parent_file_id', 'status', 'content_hash',
+            'download_url', 'size', 'trashed'
+        ];
+        let valid = true;
+        for (const key of list) {
+            if (!originObject[key]) {
+                console.info('原始对象缺失属性' + key);
+                if (key in ['file_id', 'content_hash', 'download_url']) {
+                    valid = false;
+                    console.error('可能导致无法获取');
+                }
+            }
+            this[key] = originObject[key];
+        }
+        this.tags = [];
+        this.valid = valid;
+    }
+    async fetch() {
+        let res = await fetchMusic(this.content_hash, this.download_url);
+        return res;
+    }
+}
 
 let testSong = {
     "file_id": "61499924a8cbabde2c984c9ebb270588359966b7",
@@ -10,20 +38,28 @@ let testSong = {
 };
 
 function replacer(key, value) {
+    console.log(key, value);
     if (value instanceof Map) {
         return {
             dataType: 'Map',
             value: Array.from(value.entries()), // or with spread: value: [...value]
         };
-    } else {
-        return value;
     }
+    if (value instanceof Song && value.fetch !== 'fetchMusic') {
+        value.fetch = 'fetchMusic';
+    }
+    return value;
 }
 
 function reviver(key, value) {
     if (typeof value === 'object' && value !== null) {
         if (value.dataType === 'Map') {
             return new Map(value.value);
+        }
+        if (value.fetch === 'fetchMusic') {
+            delete value.fetch;
+            Object.setPrototypeOf(value, Song.prototype);
+            return value;
         }
     }
     return value;
@@ -60,8 +96,9 @@ const useSongListsStore = defineStore('songLists', {
             if (!targetList) return;
             let k = 0;
             songs.forEach(song => {
+                song = new Song(song);
+                if (!song.valid) return;
                 if (!targetList.has(song.file_id)) {
-                    song.tags = [];
                     targetList.set(song.file_id, song);
                 }
             });
