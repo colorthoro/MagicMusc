@@ -21,7 +21,7 @@ export default {
       "playing",
     ]),
   },
-  actions: {
+  methods: {
     ...mapActions(usePlayingQStore, ["add", "play"]),
   },
 };
