@@ -91,7 +91,12 @@ def cache():
     hash = request.json['hash']
     url = request.json['url']
     file_path = os.path.join(os.getcwd(), hash)
-    ali.download_file(file_path=file_path, url=url)
+    try:
+        ali.download_file(file_path=file_path, url=url)
+    except ValueError as e:
+        if e.args[0].startswith('无效下载链接'):
+            return '无效下载链接'
+        raise e
     def send_chunk():  # 流式读取
         store_path = file_path
         with open(store_path, 'rb') as target_file:
