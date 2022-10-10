@@ -4,6 +4,8 @@
       <button class="control" @click="getAllSongsFromCloud">
         点我获取全部云音乐
       </button>
+      <button @click="play([...allSongs.values()])">播放全部</button>
+      <button @click="pause">暂停播放</button>
       <div class="all">
         <div class="song" v-for="song of allSongs.values()" :key="song.file_id">
           {{ song.name }}
@@ -13,6 +15,7 @@
             删除
           </button>
           <button @click="song.fetch()">获取</button>
+          <button @click="play(song)">播放</button>
         </div>
       </div>
       <div class="bin">
@@ -36,6 +39,7 @@
 <script>
 import { mapState, mapActions } from "pinia";
 import useSongListsStore from "../store/songLists";
+import usePlayingQStore from "../store/playingQ";
 
 export default {
   name: "SongList",
@@ -51,6 +55,7 @@ export default {
       "clearList",
       "getAllSongsFromCloud",
     ]),
+    ...mapActions(usePlayingQStore, ["play", "pause"]),
   },
 };
 </script>

@@ -1,19 +1,22 @@
 <template>
-  <login-or-register/>
-  <song-list/>
+  <login-or-register />
+  <song-list />
+  <play-bar />
 </template>
 
 <script>
-import LoginOrRegister from './components/loginOrRegister.vue'
-import SongList from './components/SongList'
+import LoginOrRegister from "./components/loginOrRegister";
+import SongList from "./components/SongList";
+import PlayBar from "./components/PlayBar";
 
 export default {
-  name: 'App',
+  name: "App",
   components: {
     SongList,
     LoginOrRegister,
-  }
-}
+    PlayBar,
+  },
+};
 </script>
 
 <style>
