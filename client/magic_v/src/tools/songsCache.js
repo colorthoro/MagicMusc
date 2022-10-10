@@ -41,5 +41,57 @@ export async function dbGet(content_hash) {
     else console.log('not in the IndexedDB!');
     return res;
 }
+export class Song {
+    constructor(originObject) {
+        let list = [
+            'name', 'mime_extension', 'file_id',
+            'parent_file_id', 'status', 'content_hash',
+            'download_url', 'size', 'trashed'
+        ];
+        let valid = true;
+        for (const key of list) {
+            if (!originObject[key]) {
+                console.info('原始对象缺失属性' + key);
+                if (key in ['file_id', 'content_hash', 'download_url']) {
+                    valid = false;
+                    console.error('可能导致无法获取');
+                }
+            }
+            this[key] = originObject[key];
+        }
+        this.tags = [];
+        this.valid = valid;
+    }
+    async fetch() {
+        let res = await fetchMusic(this.content_hash, this.download_url);
+        return res;
+    }
+}
 
-export default { fetchMusic, dbPut, dbGet };
+export function replacer(key, value) {
+    console.log(key, value);
+    if (value instanceof Map) {
+        return {
+            dataType: 'Map',
+            value: Array.from(value.entries()), // or with spread: value: [...value]
+        };
+    }
+    if (value instanceof Song && value.fetch !== 'fetchMusic') {
+        value.fetch = 'fetchMusic';
+    }
+    return value;
+}
+
+export function reviver(key, value) {
+    if (typeof value === 'object' && value !== null) {
+        if (value.dataType === 'Map') {
+            return new Map(value.value);
+        }
+        if (value.fetch === 'fetchMusic') {
+            delete value.fetch;
+            Object.setPrototypeOf(value, Song.prototype);
+            return value;
+        }
+    }
+    return value;
+}
