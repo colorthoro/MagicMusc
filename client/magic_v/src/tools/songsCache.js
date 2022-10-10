@@ -64,7 +64,7 @@ export class Song {
     }
     async fetch() {
         let res = await fetchMusic(this.content_hash, this.download_url);
-        return res;
+        return res.file;
     }
 }
 
