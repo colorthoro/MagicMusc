@@ -44,8 +44,25 @@ export async function dbGet(content_hash) {
     else console.log('not in the IndexedDB!');
     return res;
 }
+
+export async function getFileInfo(file_id) {
+    console.log('正在尝试获取文件信息', file_id);
+    let res = await axios({
+        method: 'get',
+        url: 'api/getf',
+        params: { file_id }
+    });
+    return res.data;
+}
+
 export class Song {
     constructor(originObject) {
+        let valid = this.test(originObject, true);
+        this.tags = [];
+        this.valid = valid;
+        this.lost = false;
+    }
+    test(originObject, inject = false) {
         let list = [
             'name', 'mime_extension', 'file_id',
             'parent_file_id', 'status', 'content_hash',
@@ -60,11 +77,9 @@ export class Song {
                     console.error('可能导致无法获取');
                 }
             }
-            this[key] = originObject[key];
+            if (inject) this[key] = originObject[key];
         }
-        this.tags = [];
-        this.valid = valid;
-        this.lost = false;
+        return valid;
     }
     async fetch() {
         try {
@@ -72,18 +87,27 @@ export class Song {
             return res.file;
         } catch (e) {
             if (e === '无效下载链接') {
-                this.update();
+                this.lost = true;
+                console.error('无效下载链接');
+                this.lost = ! await this.updateUrl();
                 if (!this.lost) this.fetch();
             }
         }
     }
-    async update() {
+    async updateUrl() {
         // 根据file_id重新获取文件信息，比对download_url，不同则赋值，并改变this.lost
+        let res = await getFileInfo(this.file_id);
+        if (res.download_url && res.download_url !== this.download_url) {
+            this.download_url = res.download_url;
+            console.log('更新下载链接成功！');
+            return true;
+        }
+        return false;
     }
 }
 
 export function replacer(key, value) {
-    console.log(key, value);
+    // console.log(key, value);
     if (value instanceof Map) {
         return {
             dataType: 'Map',
