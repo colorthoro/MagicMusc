@@ -6,6 +6,8 @@
       </button>
       <button @click="play([...allSongs.values()])">播放全部</button>
       <button @click="pause">暂停播放</button>
+      <button @click="last">上一首</button>
+      <button @click="next">下一首</button>
       <div class="all">
         <div class="song" v-for="song of allSongs.values()" :key="song.file_id">
           {{ song.name }}
@@ -55,7 +57,7 @@ export default {
       "clearList",
       "getAllSongsFromCloud",
     ]),
-    ...mapActions(usePlayingQStore, ["play", "pause"]),
+    ...mapActions(usePlayingQStore, ["play", "pause", "next", "last"]),
   },
 };
 </script>
