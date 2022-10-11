@@ -6,7 +6,6 @@ const useSongListsStore = defineStore('songLists', {
     persist: true,
     state: () => ({
         allSongs: new Map(),
-        lostSongs: new Map(),
         binSongs: new Map(),
     }),
     getters: {

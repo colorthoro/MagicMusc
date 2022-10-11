@@ -47,7 +47,7 @@ export default {
     return {};
   },
   computed: {
-    ...mapState(useSongListsStore, ["allSongs", "lostSongs", "binSongs"]),
+    ...mapState(useSongListsStore, ["allSongs", "binSongs"]),
   },
   methods: {
     ...mapActions(useSongListsStore, [
