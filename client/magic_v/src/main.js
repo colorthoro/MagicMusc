@@ -4,7 +4,7 @@ import { createPinia } from 'pinia'
 import { createPersistedState } from 'pinia-plugin-persistedstate'
 import { replacer, reviver } from './tools/songsCache'
 import VueCookies from 'vue-cookies'
-import songDb from './tools/songsCache'
+import { fetchMusic, dbPut, dbGet } from './tools/songsCache'
 
 const app = createApp(App);
 app.use(createPinia().use(createPersistedState({
@@ -17,5 +17,5 @@ app.use(createPinia().use(createPersistedState({
     }
 })));
 app.use(VueCookies);
-app.config.globalProperties.songDb = songDb;
+app.config.globalProperties.songDb = { fetchMusic, dbPut, dbGet };
 app.mount('#app');
