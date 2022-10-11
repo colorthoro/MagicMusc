@@ -10,7 +10,7 @@ export async function fetchMusic(hash, url) {
     let test = await dbGet(hash);
     if (test) {
         console.log('已从本地IndexedDB取得文件', hash, test);
-        return test;
+        return test.file;
     }
     let res = await axios({
         method: "post",
@@ -84,7 +84,7 @@ export class Song {
     async fetch() {
         try {
             let res = await fetchMusic(this.content_hash, this.download_url);
-            return res.file;
+            return res;
         } catch (e) {
             if (e === '无效下载链接') {
                 this.lost = true;
