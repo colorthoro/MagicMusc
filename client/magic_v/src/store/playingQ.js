@@ -6,7 +6,7 @@ export default defineStore('playingQ', {
         playingQ: [],
         nowIndex: 0,
         history: { recall: -1, max: 100, list: [] },
-        addSongMode: 'unshift' || 'push',
+        addSongMode: 'rightNow' || 'queue',
         playOrder: 'random' || 'one' || 'queue',
         audio: null,
     }),
@@ -28,7 +28,11 @@ export default defineStore('playingQ', {
             else if (songOrSongs instanceof Song) {
                 let i = this.playingQ.indexOf(songOrSongs);
                 if (i !== -1) this.playingQ.splice(i, 1);
-                this.playingQ[this.addSongMode](songOrSongs);
+                if (this.addSongMode === 'rightNow') {
+                    this.playingQ.splice(this.nowIndex, 0, songOrSongs);
+                } else if (this.addSongMode === 'queue') {
+                    this.playingQ.push(songOrSongs);
+                }
             }
         },
         recordPlayed(song) {
