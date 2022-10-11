@@ -90,8 +90,8 @@ export function replacer(key, value) {
             value: Array.from(value.entries()), // or with spread: value: [...value]
         };
     }
-    if (value instanceof Song && value.fetch !== 'fetchMusic') {
-        value.fetch = 'fetchMusic';
+    if (value instanceof Song && value.dataType !== 'SongIned') {
+        value.dataType = 'SongIned';
     }
     return value;
 }
@@ -101,8 +101,8 @@ export function reviver(key, value) {
         if (value.dataType === 'Map') {
             return new Map(value.value);
         }
-        if (value.fetch === 'fetchMusic') {
-            delete value.fetch;
+        if (value.dataType === 'SongIned') {
+            value.dataType = 'SongOuted';
             Object.setPrototypeOf(value, Song.prototype);
             return value;
         }
