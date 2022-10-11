@@ -86,7 +86,7 @@ export default defineStore('playingQ', {
                 console.log('请先选择歌曲吧！');
                 return;
             }
-            console.log('准备获取', songOrSongs);
+            console.log('准备获取', targetSong);
             let blob = await targetSong.fetch();
             console.log('即将开始播放', blob);
             this.recordPlayed(targetSong);
