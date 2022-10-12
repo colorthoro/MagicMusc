@@ -79,6 +79,15 @@ export default defineStore('playingQ', {
             this.history.normal.push(song);
             if (this.history.normal.length > this.history.max) this.history.normal.unshift();
         },
+        _resetRecur() {  // 内部函数，不要在外使用
+            if (!this.history.recur.length) return;
+            this.history.normal = [].concat(
+                this.history.normal.slice(0, -1),
+                this.history.recur,
+                this.history.normal.slice(-1)
+            );
+            this.history.recur = [];
+        },
         async _play(songOrSongs) {  // 内部函数，不要在外使用
             if (!this.audio) {
                 var audio = new Audio();
@@ -107,6 +116,10 @@ export default defineStore('playingQ', {
         },
         next() {
             if (!this.playingQ.length) return;
+            if (this.playOrder === 'one') {
+                this.Play();
+                return;
+            }
             if (this.history.recur.length) {
                 this.history.normal.push(this.history.recur.pop());
                 this._interruptIN(this.recent);
@@ -130,6 +143,10 @@ export default defineStore('playingQ', {
         },
         last() {
             if (!this.history.normal.length || !this.playingQ.length) return;
+            if (this.playOrder === 'one') {
+                this.Play();
+                return;
+            }
             if (this.history.normal.length === 1) {
                 this._play();
                 return;
@@ -139,12 +156,7 @@ export default defineStore('playingQ', {
             this._play();
         },
         Play(songOrSongs) {
-            this.history.normal = [].concat(
-                this.history.normal.slice(0, -1),
-                this.history.recur,
-                this.history.normal.slice(-1)
-            );
-            this.history.recur = [];
+            this._resetRecur();
             this._play(songOrSongs);
         }
     }
