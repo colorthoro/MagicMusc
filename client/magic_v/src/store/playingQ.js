@@ -5,54 +5,80 @@ export default defineStore('playingQ', {
     state: () => ({
         playingQ: [],
         nowIndex: 0,
-        history: { recall: -1, max: 100, list: [] },
+        history: { max: 100, normal: [], recur: [] },
         addSongMode: 'rightNow' || 'queue',
         playOrder: 'random' || 'one' || 'queue',
         audio: null,
     }),
     getters: {
-        now(state) {
-            if (state.playingQ.length === 0) {
+        nowToPlay(state) {
+            if (!state.playingQ.length) {
                 console.log('播放列表为空！');
                 return null;
             }
             return state.playingQ[this.nowIndex];
+        },
+        recent(state) {
+            if (!state.history.normal.length) return;
+            return state.history.normal[state.history.normal.length - 1];
+        },
+        preHistoryList(state) {
+            return state.history.normal.slice(0, state.history.normal.lastIndex)
+                .concat(state.history.recur);
         }
     },
     actions: {
         addToPlaying(songOrSongs) {
             if (songOrSongs instanceof Array) {
+                this.nowIndex = 0;
                 let pure = songOrSongs.filter(v => v instanceof Song);
                 this.playingQ = pure;
             }
             else if (songOrSongs instanceof Song) {
-                let i = this.playingQ.indexOf(songOrSongs);
-                if (i !== -1) this.playingQ.splice(i, 1);
                 if (this.addSongMode === 'rightNow') {
-                    this.playingQ.splice(this.nowIndex, 0, songOrSongs);
+                    this.interruptIN(songOrSongs);
                 } else if (this.addSongMode === 'queue') {
                     this.playingQ.push(songOrSongs);
                 }
             }
         },
+        interruptIN(song) {
+            if (song === this.playingQ[this.nowIndex]) return;
+            let i = this.playingQ.indexOf(song);
+            if (i === -1) {
+                this.playingQ.splice(this.nowIndex, 0, song);
+                return;
+            }
+            this.nowIndex = i;
+        },
         recordPlayed(song) {
+            if (!(song instanceof Song)) return;
+            if (this.recent && song === this.recent.song) {
+                this.recent.cnt++;
+                return;
+            }
             let i = -1, cnt = 1;
-            this.history.list.forEach((hi, index) => {
+            this.history.normal.forEach((hi, index) => {
                 if (hi.song === song) {
-                    cnt += hi.cnt;
                     i = index;
+                    cnt += hi.cnt;
+                    return;
                 }
             });
-            i !== -1 && this.history.list.splice(i, 1);
-            this.history.list.push({ song, cnt });
-            if (this.history.list.length > this.history.max) {
-                this.history.list.shift();
-            }
+            if (i !== -1) this.history.normal.splice(i, 1);
+            this.history.normal = this.preHistoryList;
+            this.history.normal.push({ song, cnt });
         },
         pause() {
             this.audio.pause();
         },
         next() {
+            if (this.history.recur.length) {
+                this.history.normal.push(this.history.recur.pop());
+                this.interruptIN(this.recent.song);
+                this.play();
+                return;
+            }
             if (this.playOrder === 'queue') {
                 this.nowIndex++;
                 this.nowIndex %= this.playingQ.length;
@@ -60,20 +86,16 @@ export default defineStore('playingQ', {
             else if (this.playOrder === 'random') {
                 this.nowIndex = Math.floor(Math.random() * this.playingQ.length);
             }
-            this.history.recall = -1;
             this.play();
         },
         last() {
-            if (!this.history.list.length) return;
-            if (this.history.recall === -1) {
-                this.history.recall = Math.max(this.history.list.length - 2, 0);
+            if (!this.history.normal.length) return;
+            if (this.history.normal.length === 1) {
+                this.play();
+                return;
             }
-            let lastSong = this.history.list[this.history.recall].song;
-            this.history.recall--;
-            let i = this.playingQ.indexOf(lastSong);
-            if (i === -1) {
-                this.playingQ.splice(this.nowIndex, 0, lastSong);
-            } else this.nowIndex = i;
+            this.history.recur.push(this.history.normal.pop());
+            this.interruptIN(this.recent.song);
             this.play();
         },
         async play(songOrSongs) {
@@ -85,7 +107,7 @@ export default defineStore('playingQ', {
                 URL.revokeObjectURL(this.audio.src);
             }
             songOrSongs && this.addToPlaying(songOrSongs);
-            let targetSong = this.now;
+            let targetSong = this.nowToPlay;
             if (!targetSong) {
                 console.log('请先选择歌曲吧！');
                 return;
