@@ -74,13 +74,10 @@ export default defineStore('playingQ', {
             }
             let i = this.history.normal.indexOf(song);
             if (i !== -1) {
-                let hi = this.history.normal.splice(i, 1)[0];
-                hi.cnt++;
-                this.history.normal.push(hi);
-            } else {
-                song.cnt++;
-                this.history.normal.push(song);
+                song.cnt = this.history.normal.splice(i, 1)[0].cnt;
             }
+            song.cnt++;
+            this.history.normal.push(song);
             if (this.history.normal.length > this.history.max) this.history.normal.unshift();
         },
         pause() {
