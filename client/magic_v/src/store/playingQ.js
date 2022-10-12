@@ -57,8 +57,9 @@ export default defineStore('playingQ', {
                 this.recent.cnt++;
                 return;
             }
-            let target = this.history.normal.find(hi => hi.song === song);
-            if (target) {
+            let i = this.history.normal.findIndex(hi => hi.song === song);
+            if (i !== -1) {
+                let target = this.history.normal.splice(i, 1)[0];
                 target.cnt++;
                 this.history.normal.push(target);
                 return;
@@ -80,7 +81,14 @@ export default defineStore('playingQ', {
                 this.nowIndex %= this.playingQ.length;
             }
             else if (this.playOrder === 'random') {
-                this.nowIndex = Math.floor(Math.random() * this.playingQ.length);
+                let limit = 3;
+                do {
+                    this.nowIndex = Math.floor(Math.random() * this.playingQ.length);
+                } while (
+                    this.nowToPlay === this.recent.song || (
+                        limit-- && this.historyList.find(hi => hi.song === this.nowToPlay)
+                    )
+                );
             }
             this.play();
         },
