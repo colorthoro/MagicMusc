@@ -6,7 +6,6 @@ export default defineStore('playingQ', {
         playingQ: [],
         nowIndex: 0,
         history: { max: 100, normal: [], recur: [] },
-        addSongMode: 'rightNow' || 'queue',
         playOrder: 'random' || 'one' || 'queue',
         audio: null,
     }),
@@ -20,24 +19,25 @@ export default defineStore('playingQ', {
         },
         recent(state) {
             if (!state.history.normal.length) return;
-            return state.history.normal[state.history.normal.length - 1];
+            return state.history.normal.slice(-1);
         },
         historyList(state) {
-            return state.history.normal.slice(0, state.history.normal.length - 1)
+            return state.history.normal.slice(0, -1)
                 .concat(state.history.recur, this.recent);
         }
     },
     actions: {
-        addToPlaying(songOrSongs) {
+        addToPlaying(songOrSongs, addSongMode = 'rightNow') {
             if (songOrSongs instanceof Array) {
                 this.nowIndex = 0;
                 let pure = songOrSongs.filter(v => v instanceof Song);
                 this.playingQ = pure;
             }
             else if (songOrSongs instanceof Song) {
-                if (this.addSongMode === 'rightNow') {
+                if (addSongMode === 'rightNow') {
                     this.interruptIN(songOrSongs);
-                } else if (this.addSongMode === 'queue') {
+                } else if (addSongMode === 'queue') {
+                    this.playingQ.splice(this.playingQ.findIndex(song => songOrSongs === song), 1);
                     this.playingQ.push(songOrSongs);
                 }
             }
@@ -70,6 +70,7 @@ export default defineStore('playingQ', {
             this.audio.pause();
         },
         next() {
+            if (!this.playingQ.length) return;
             if (this.history.recur.length) {
                 this.history.normal.push(this.history.recur.pop());
                 this.interruptIN(this.recent.song);
@@ -93,7 +94,7 @@ export default defineStore('playingQ', {
             this.play();
         },
         last() {
-            if (!this.history.normal.length) return;
+            if (!this.history.normal.length || !this.playingQ.length) return;
             if (this.history.normal.length === 1) {
                 this.play();
                 return;
