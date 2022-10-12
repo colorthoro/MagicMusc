@@ -19,11 +19,13 @@ export default defineStore('playingQ', {
         },
         recent(state) {
             if (!state.history.normal.length) return;
-            return state.history.normal.slice(-1);
+            return state.history.normal.slice(-1)[0];
         },
         historyList(state) {
-            return state.history.normal.slice(0, -1)
-                .concat(state.history.recur, this.recent);
+            return [].concat(
+                state.history.normal.slice(0, -1),
+                state.history.recur, this.recent
+            );
         }
     },
     actions: {
@@ -57,12 +59,15 @@ export default defineStore('playingQ', {
                 this.recent.cnt++;
                 return;
             }
-            let i = this.history.normal.findIndex(hi => hi.song === song);
+            let i = this.history.normal.findIndex(hi => hi === song);
             if (i !== -1) {
-                let target = this.history.normal.splice(i, 1)[0];
-                target.cnt++;
-                this.history.normal.push(target);
-            } else this.history.normal.push({ song, cnt: 1 });
+                let hi = this.history.normal.splice(i, 1)[0];
+                hi.cnt++;
+                this.history.normal.push(hi);
+            } else {
+                song.cnt++;
+                this.history.normal.push(song);
+            }
             if (this.history.normal.length > this.history.max) this.history.normal.unshift();
         },
         pause() {
@@ -72,7 +77,7 @@ export default defineStore('playingQ', {
             if (!this.playingQ.length) return;
             if (this.history.recur.length) {
                 this.history.normal.push(this.history.recur.pop());
-                this.interruptIN(this.recent.song);
+                this.interruptIN(this.recent);
                 this.play();
                 return;
             }
@@ -86,7 +91,7 @@ export default defineStore('playingQ', {
                     this.nowIndex = Math.floor(Math.random() * this.playingQ.length);
                 } while (
                     this.nowToPlay === this.recent.song || (
-                        limit-- && this.historyList.find(hi => hi.song === this.nowToPlay)
+                        limit-- && this.historyList.find(hi => hi === this.nowToPlay)
                     )
                 );
             }
@@ -99,7 +104,7 @@ export default defineStore('playingQ', {
                 return;
             }
             this.history.recur.push(this.history.normal.pop());
-            this.interruptIN(this.recent.song);
+            this.interruptIN(this.recent);
             this.play();
         },
         async play(songOrSongs) {
@@ -113,7 +118,7 @@ export default defineStore('playingQ', {
             songOrSongs && this.addToPlaying(songOrSongs);
             let targetSong = this.nowToPlay;
             if (!targetSong) {
-                console.log('请先选择歌曲吧！');
+                console.error('请先选择歌曲吧！');
                 return;
             }
             console.log('准备获取', targetSong);

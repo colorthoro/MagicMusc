@@ -61,6 +61,7 @@ export class Song {
         this.tags = [];
         this.valid = valid;
         this.lost = false;
+        this.cnt = 0;
     }
     test(originObject, inject = false) {
         let list = [

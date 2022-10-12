@@ -1,25 +1,38 @@
 <template>
   <div>
-    <div class="container"></div>
+    <div class="container">
+      播放列表：
+      <div v-for="song of playingQ" :key="song.file_id">
+        {{ song.name }}
+      </div>
+      历史列表：
+      <div v-if="history.normal.length">
+        <div v-for="hi of historyList" :key="hi.file_id">
+          {{ hi.name }}
+        </div>
+      </div>
+      normal:
+      <div v-for="hi of history.normal" :key="hi.file_id">
+        {{ hi.name }}
+      </div>
+      recur:
+      <div v-for="hi of history.recur" :key="hi.file_id">
+        {{ hi.name }}
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
-import { mapWritableState, mapActions } from "pinia";
+import { mapState, mapWritableState, mapActions } from "pinia";
 import usePlayingQStore from "../store/playingQ";
 
 export default {
   name: "PlayBar",
   data: () => ({}),
   computed: {
-    ...mapWritableState(usePlayingQStore, [
-      "playingQ",
-      "history",
-      "addSongMode",
-      "playOrder",
-      "historyMax",
-      "playing",
-    ]),
+    ...mapWritableState(usePlayingQStore, ["playingQ", "history", "playOrder"]),
+    ...mapState(usePlayingQStore, ["historyList"]),
   },
   methods: {
     ...mapActions(usePlayingQStore, ["add", "play"]),
