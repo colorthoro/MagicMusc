@@ -38,7 +38,7 @@ export default defineStore('playingQ', {
             }
             else if (songOrSongs instanceof Song) {
                 if (addSongMode === 'rightNow') {
-                    this.interruptIN(songOrSongs);
+                    this._interruptIN(songOrSongs);
                 } else if (addSongMode === 'queue') {
                     this.playingQ.splice(this.playingQ.indexOf(songOrSongs), 1);
                     this.playingQ.push(songOrSongs);
@@ -54,10 +54,10 @@ export default defineStore('playingQ', {
             this.playingQ.splice(i, 1);
             if (i === this.nowIndex) {
                 this.nowIndex = i === this.playingQ.length ? i - 1 : i;
-                this.play();
+                this._play();
             } else if (i < this.nowIndex) this.nowIndex--;
         },
-        interruptIN(song) {
+        _interruptIN(song) {  // 内部函数，不要在外使用
             if (song === this.playingQ[this.nowIndex]) return;
             let i = this.playingQ.indexOf(song);
             if (i === -1) {
@@ -67,7 +67,7 @@ export default defineStore('playingQ', {
             }
             this.nowIndex = i;
         },
-        recordPlayed(song) {
+        _recordPlayed(song) {  // 内部函数，不要在外使用
             if (!(song instanceof Song)) return;
             if (this.recent && song === this.recent.song) {
                 this.recent.cnt++;
@@ -79,43 +79,7 @@ export default defineStore('playingQ', {
             this.history.normal.push(song);
             if (this.history.normal.length > this.history.max) this.history.normal.unshift();
         },
-        pause() {
-            if (this.audio) this.audio.pause();
-        },
-        next() {
-            if (!this.playingQ.length) return;
-            if (this.history.recur.length) {
-                this.history.normal.push(this.history.recur.pop());
-                this.interruptIN(this.recent);
-                this.play();
-                return;
-            }
-            if (this.playOrder === 'queue') {
-                this.nowIndex++;
-                this.nowIndex %= this.playingQ.length;
-            } else if (this.playOrder === 'random') {
-                let limit = 3;
-                do {
-                    this.nowIndex = Math.floor(Math.random() * this.playingQ.length);
-                } while (
-                    this.nowToPlay === this.recent.song || (
-                        limit-- && this.historyList.find(hi => hi === this.nowToPlay)
-                    )
-                );
-            }
-            this.play();
-        },
-        last() {
-            if (!this.history.normal.length || !this.playingQ.length) return;
-            if (this.history.normal.length === 1) {
-                this.play();
-                return;
-            }
-            this.history.recur.push(this.history.normal.pop());
-            this.interruptIN(this.recent);
-            this.play();
-        },
-        async play(songOrSongs) {
+        async _play(songOrSongs) {  // 内部函数，不要在外使用
             if (!this.audio) {
                 var audio = new Audio();
                 this.audio = audio;
@@ -132,11 +96,47 @@ export default defineStore('playingQ', {
             console.log('准备获取', targetSong);
             let blob = await targetSong.fetch();
             console.log('即将开始播放', blob);
-            this.recordPlayed(targetSong);
+            this._recordPlayed(targetSong);
             let url = URL.createObjectURL(blob);
             this.audio.src = url;
             this.audio.controls = true;
             this.audio.play();
+        },
+        pause() {
+            if (this.audio) this.audio.pause();
+        },
+        next() {
+            if (!this.playingQ.length) return;
+            if (this.history.recur.length) {
+                this.history.normal.push(this.history.recur.pop());
+                this._interruptIN(this.recent);
+                this._play();
+                return;
+            }
+            if (this.playOrder === 'queue') {
+                this.nowIndex++;
+                this.nowIndex %= this.playingQ.length;
+            } else if (this.playOrder === 'random') {
+                let limit = 3;
+                do {
+                    this.nowIndex = Math.floor(Math.random() * this.playingQ.length);
+                } while (
+                    this.nowToPlay === this.recent.song || (
+                        limit-- && this.historyList.find(hi => hi === this.nowToPlay)
+                    )
+                );
+            }
+            this._play();
+        },
+        last() {
+            if (!this.history.normal.length || !this.playingQ.length) return;
+            if (this.history.normal.length === 1) {
+                this._play();
+                return;
+            }
+            this.history.recur.push(this.history.normal.pop());
+            this._interruptIN(this.recent);
+            this._play();
         },
         Play(songOrSongs) {
             this.history.normal = [].concat(
@@ -145,7 +145,7 @@ export default defineStore('playingQ', {
                 this.history.normal.slice(-1)
             );
             this.history.recur = [];
-            this.play(songOrSongs);
+            this._play(songOrSongs);
         }
     }
 })
