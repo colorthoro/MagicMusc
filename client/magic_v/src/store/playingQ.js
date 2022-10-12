@@ -22,9 +22,9 @@ export default defineStore('playingQ', {
             if (!state.history.normal.length) return;
             return state.history.normal[state.history.normal.length - 1];
         },
-        preHistoryList(state) {
-            return state.history.normal.slice(0, state.history.normal.lastIndex)
-                .concat(state.history.recur);
+        historyList(state) {
+            return state.history.normal.slice(0, state.history.normal.length - 1)
+                .concat(state.history.recur, this.recent);
         }
     },
     actions: {
@@ -57,17 +57,13 @@ export default defineStore('playingQ', {
                 this.recent.cnt++;
                 return;
             }
-            let i = -1, cnt = 1;
-            this.history.normal.forEach((hi, index) => {
-                if (hi.song === song) {
-                    i = index;
-                    cnt += hi.cnt;
-                    return;
-                }
-            });
-            if (i !== -1) this.history.normal.splice(i, 1);
-            this.history.normal = this.preHistoryList;
-            this.history.normal.push({ song, cnt });
+            let target = this.history.normal.find(hi => hi.song === song);
+            if (target) {
+                target.cnt++;
+                this.history.normal.push(target);
+                return;
+            }
+            this.history.normal.push({ song, cnt: 1 });
         },
         pause() {
             this.audio.pause();
