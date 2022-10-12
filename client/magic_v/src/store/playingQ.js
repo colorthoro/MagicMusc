@@ -13,7 +13,7 @@ export default defineStore('playingQ', {
         nowToPlay(state) {
             if (!state.playingQ.length) {
                 console.log('播放列表为空！');
-                return null;
+                return;
             }
             return state.playingQ[this.nowIndex];
         },
@@ -62,12 +62,11 @@ export default defineStore('playingQ', {
                 let target = this.history.normal.splice(i, 1)[0];
                 target.cnt++;
                 this.history.normal.push(target);
-                return;
-            }
-            this.history.normal.push({ song, cnt: 1 });
+            } else this.history.normal.push({ song, cnt: 1 });
+            if (this.history.normal.length > this.history.max) this.history.normal.unshift();
         },
         pause() {
-            this.audio.pause();
+            if (this.audio) this.audio.pause();
         },
         next() {
             if (!this.playingQ.length) return;
