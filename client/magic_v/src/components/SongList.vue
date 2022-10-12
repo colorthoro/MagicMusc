@@ -4,7 +4,7 @@
       <button class="control" @click="getAllSongsFromCloud">
         点我获取全部云音乐
       </button>
-      <button @click="Play([...allSongs.values()])">播放全部</button>
+      <button @click="play([...allSongs.values()])">播放全部</button>
       <button @click="pause">暂停播放</button>
       <button @click="last">上一首</button>
       <button @click="next">下一首</button>
@@ -17,7 +17,9 @@
             删除
           </button>
           <button @click="song.fetch()">获取</button>
-          <button @click="Play(song)">播放</button>
+          <button @click="play(song)">播放</button>
+          <button @click="addNextPlay(song)">下一首播放</button>
+          <button @click="addQueuePlay(song)">添加到播放队列</button>
         </div>
       </div>
       <div class="bin">
@@ -57,7 +59,14 @@ export default {
       "clearList",
       "getAllSongsFromCloud",
     ]),
-    ...mapActions(usePlayingQStore, ["Play", "pause", "next", "last"]),
+    ...mapActions(usePlayingQStore, [
+      "play",
+      "pause",
+      "next",
+      "last",
+      "addNextPlay",
+      "addQueuePlay",
+    ]),
   },
 };
 </script>

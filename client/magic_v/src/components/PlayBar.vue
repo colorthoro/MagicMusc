@@ -3,7 +3,7 @@
     <div class="container">
       播放列表：
       <div v-for="song of playingQ" :key="song.file_id">
-        {{ song.name }}
+        {{ song.name }} {{ song === recent ? "***" : "---" }}
         <button @click="del(song)">删除</button>
       </div>
       <!-- 历史列表：
@@ -33,10 +33,10 @@ export default {
   data: () => ({}),
   computed: {
     ...mapWritableState(usePlayingQStore, ["playingQ", "history", "playOrder"]),
-    ...mapState(usePlayingQStore, ["historyList"]),
+    ...mapState(usePlayingQStore, ["historyList", "recent"]),
   },
   methods: {
-    ...mapActions(usePlayingQStore, ["add", "Play", "del"]),
+    ...mapActions(usePlayingQStore, ["add", "play", "del"]),
   },
 };
 </script>

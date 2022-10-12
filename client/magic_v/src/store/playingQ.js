@@ -6,7 +6,7 @@ export default defineStore('playingQ', {
         playingQ: [],
         nowIndex: -1,
         history: { max: 100, normal: [], recur: [] },
-        playOrder: 'random' || 'one' || 'queue',
+        playOrder: 'queue' || 'one' || 'random',
         audio: null,
     }),
     getters: {
@@ -30,44 +30,53 @@ export default defineStore('playingQ', {
         }
     },
     actions: {
-        addToPlaying(songOrSongs, addSongMode = 'rightNow') {
+        _addToPlaying(songOrSongs, addSongMode = 'rightNow') {
             if (songOrSongs instanceof Array) {
                 this.nowIndex = 0;
                 let pure = songOrSongs.filter(v => v instanceof Song);
                 this.playingQ = pure;
+                return;
             }
-            else if (songOrSongs instanceof Song) {
-                if (addSongMode === 'rightNow') {
-                    this._interruptIN(songOrSongs);
-                } else if (addSongMode === 'queue') {
-                    this.playingQ.splice(this.playingQ.indexOf(songOrSongs), 1);
-                    this.playingQ.push(songOrSongs);
+            if (songOrSongs instanceof Song) {
+                switch (addSongMode) {
+                    case 'rightNow':
+                        this._justOccupy(songOrSongs); break;
+                    case 'next':
+                        this._delAndInsert(songOrSongs, () => this.playingQ.splice(this.nowIndex + 1, 0, songOrSongs));
+                        break;
+                    case 'queue':
+                        this._delAndInsert(songOrSongs, () => this.playingQ.push(songOrSongs));
+                        break;
+                    default:
+                        console.error('unknown addSongMode!');
                 }
             }
         },
         del(song) {
             if (!this.playingQ.length) return;
-            let i = -1;
-            if (song === this.playingQ[this.nowIndex]) {
-                i = this.nowIndex;
-            } else i = this.playingQ.indexOf(song);
+            let i = (song === this.playingQ[this.nowIndex]) ?
+                this.nowIndex : this.playingQ.indexOf(song);
             this.playingQ.splice(i, 1);
             if (i === this.nowIndex) {
                 this.nowIndex = i === this.playingQ.length ? i - 1 : i;
                 this._play();
             } else if (i < this.nowIndex) this.nowIndex--;
         },
-        _interruptIN(song) {  // 内部函数，不要在外使用
+        _delAndInsert(song, insertWay) {
+            if (song === this.playingQ[this.nowIndex]) return;
+            if (this.nowIndex < 0) this.nowIndex = 0;
+            let i = this.playingQ.indexOf(song);
+            if (i !== -1) this.playingQ.splice(i, 1);
+            insertWay();  // 务必保证插入位置在nowIndex之后
+        },
+        _justOccupy(song) {
             if (song === this.playingQ[this.nowIndex]) return;
             let i = this.playingQ.indexOf(song);
-            if (i === -1) {
-                this.nowIndex = Math.max(this.nowIndex, 0);
-                this.playingQ.splice(this.nowIndex, 0, song);
-                return;
-            }
-            this.nowIndex = i;
+            if (i !== -1) { this.nowIndex = i; return; }
+            this.nowIndex = Math.max(this.nowIndex, 0);
+            this.playingQ.splice(this.nowIndex, 0, song);
         },
-        _recordPlayed(song) {  // 内部函数，不要在外使用
+        _recordPlayed(song) {
             if (!(song instanceof Song)) return;
             if (this.recent && song === this.recent.song) {
                 this.recent.cnt++;
@@ -79,7 +88,7 @@ export default defineStore('playingQ', {
             this.history.normal.push(song);
             if (this.history.normal.length > this.history.max) this.history.normal.unshift();
         },
-        _resetRecur() {  // 内部函数，不要在外使用
+        _resetRecur() {
             if (!this.history.recur.length) return;
             this.history.normal = [].concat(
                 this.history.normal.slice(0, -1),
@@ -88,7 +97,7 @@ export default defineStore('playingQ', {
             );
             this.history.recur = [];
         },
-        async _play(songOrSongs) {  // 内部函数，不要在外使用
+        async _play(songOrSongs) {
             if (!this.audio) {
                 var audio = new Audio();
                 this.audio = audio;
@@ -96,7 +105,7 @@ export default defineStore('playingQ', {
                 this.audio.pause();
                 URL.revokeObjectURL(this.audio.src);
             }
-            songOrSongs && this.addToPlaying(songOrSongs);
+            songOrSongs && this._addToPlaying(songOrSongs);
             let targetSong = this.nowToPlay;
             if (!targetSong) {
                 console.error('请先选择歌曲吧！');
@@ -116,14 +125,10 @@ export default defineStore('playingQ', {
         },
         next() {
             if (!this.playingQ.length) return;
-            if (this.playOrder === 'one') {
-                this.Play();
-                return;
-            }
+            if (this.playOrder === 'one') { this.play(); return; }
             if (this.history.recur.length) {
                 this.history.normal.push(this.history.recur.pop());
-                this._interruptIN(this.recent);
-                this._play();
+                this._play(this.recent);
                 return;
             }
             if (this.playOrder === 'queue') {
@@ -143,21 +148,25 @@ export default defineStore('playingQ', {
         },
         last() {
             if (!this.history.normal.length || !this.playingQ.length) return;
-            if (this.playOrder === 'one') {
-                this.Play();
-                return;
-            }
+            if (this.playOrder === 'one') { this.play(); return; }
             if (this.history.normal.length === 1) {
                 this._play();
                 return;
             }
             this.history.recur.push(this.history.normal.pop());
-            this._interruptIN(this.recent);
-            this._play();
+            this._play(this.recent);
         },
-        Play(songOrSongs) {
+        play(songOrSongs) {
             this._resetRecur();
             this._play(songOrSongs);
+        },
+        addNextPlay(songOrSongs) {
+            this._addToPlaying(songOrSongs, 'next');
+            this.playingQ.length === 1 ? this.play() : this._resetRecur();
+        },
+        addQueuePlay(songOrSongs) {
+            this._addToPlaying(songOrSongs, 'queue');
+            this.playingQ.length === 1 ? this.play() : this._resetRecur();
         }
     }
 })
