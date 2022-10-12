@@ -21,10 +21,11 @@ export default defineStore('playingQ', {
             if (!state.history.normal.length) return;
             return state.history.normal.slice(-1)[0];
         },
-        historyList(state) {
+        historyList(state) {  // 不要用它给playingQ赋值，由于对象的浅拷贝、代理，赋值会造成怪异的结果。
             return [].concat(
                 state.history.normal.slice(0, -1),
-                state.history.recur, this.recent
+                state.history.recur,
+                this.history.normal.slice(-1)
             );
         }
     },
@@ -73,9 +74,7 @@ export default defineStore('playingQ', {
                 return;
             }
             let i = this.history.normal.indexOf(song);
-            if (i !== -1) {
-                song.cnt = this.history.normal.splice(i, 1)[0].cnt;
-            }
+            if (i !== -1) this.history.normal.splice(i, 1)[0];
             song.cnt++;
             this.history.normal.push(song);
             if (this.history.normal.length > this.history.max) this.history.normal.unshift();
@@ -139,5 +138,14 @@ export default defineStore('playingQ', {
             this.audio.controls = true;
             this.audio.play();
         },
+        Play(songOrSongs) {
+            this.history.normal = [].concat(
+                this.history.normal.slice(0, -1),
+                this.history.recur,
+                this.history.normal.slice(-1)
+            );
+            this.history.recur = [];
+            this.play(songOrSongs);
+        }
     }
 })
