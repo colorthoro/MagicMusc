@@ -4,7 +4,7 @@ import { Song } from "../tools/songsCache";
 export default defineStore('playingQ', {
     state: () => ({
         playingQ: [],
-        nowIndex: 0,
+        nowIndex: -1,
         history: { max: 100, normal: [], recur: [] },
         playOrder: 'random' || 'one' || 'queue',
         audio: null,
@@ -44,10 +44,23 @@ export default defineStore('playingQ', {
                 }
             }
         },
+        del(song) {
+            if (!this.playingQ.length) return;
+            let i = -1;
+            if (song === this.playingQ[this.nowIndex]) {
+                i = this.nowIndex;
+            } else i = this.playingQ.indexOf(song);
+            this.playingQ.splice(i, 1);
+            if (i === this.nowIndex) {
+                this.nowIndex = i === this.playingQ.length ? i - 1 : i;
+                this.play();
+            } else if (i < this.nowIndex) this.nowIndex--;
+        },
         interruptIN(song) {
             if (song === this.playingQ[this.nowIndex]) return;
             let i = this.playingQ.indexOf(song);
             if (i === -1) {
+                this.nowIndex = Math.max(this.nowIndex, 0);
                 this.playingQ.splice(this.nowIndex, 0, song);
                 return;
             }
@@ -84,8 +97,7 @@ export default defineStore('playingQ', {
             if (this.playOrder === 'queue') {
                 this.nowIndex++;
                 this.nowIndex %= this.playingQ.length;
-            }
-            else if (this.playOrder === 'random') {
+            } else if (this.playOrder === 'random') {
                 let limit = 3;
                 do {
                     this.nowIndex = Math.floor(Math.random() * this.playingQ.length);

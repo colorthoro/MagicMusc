@@ -4,6 +4,7 @@
       播放列表：
       <div v-for="song of playingQ" :key="song.file_id">
         {{ song.name }}
+        <button @click="del(song)">删除</button>
       </div>
       历史列表：
       <div v-if="history.normal.length">
@@ -35,7 +36,7 @@ export default {
     ...mapState(usePlayingQStore, ["historyList"]),
   },
   methods: {
-    ...mapActions(usePlayingQStore, ["add", "play"]),
+    ...mapActions(usePlayingQStore, ["add", "play", "del"]),
   },
 };
 </script>
