@@ -39,7 +39,7 @@ export default defineStore('playingQ', {
                 if (addSongMode === 'rightNow') {
                     this.interruptIN(songOrSongs);
                 } else if (addSongMode === 'queue') {
-                    this.playingQ.splice(this.playingQ.findIndex(song => songOrSongs === song), 1);
+                    this.playingQ.splice(this.playingQ.indexOf(songOrSongs), 1);
                     this.playingQ.push(songOrSongs);
                 }
             }
@@ -59,7 +59,7 @@ export default defineStore('playingQ', {
                 this.recent.cnt++;
                 return;
             }
-            let i = this.history.normal.findIndex(hi => hi === song);
+            let i = this.history.normal.indexOf(song);
             if (i !== -1) {
                 let hi = this.history.normal.splice(i, 1)[0];
                 hi.cnt++;
