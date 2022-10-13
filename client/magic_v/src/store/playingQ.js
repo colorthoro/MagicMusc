@@ -81,7 +81,6 @@ export default defineStore('playingQ', {
         },
         _recordPlayed(song) {
             if (!(song instanceof Song)) return;
-            console.log(song, this.recent);
             if (this.recent && song.sameWith(this.recent)) {
                 this.recent.cnt++;
                 return;
