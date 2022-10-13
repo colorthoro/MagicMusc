@@ -8,8 +8,11 @@ import { fetchMusic, dbPut, dbGet } from './tools/songsCache'
 
 const app = createApp(App);
 app.use(createPinia().use(createPersistedState({
+    beforeRestore: (ctx) => {
+        console.time('piniaPluginPersistedstate ' + ctx.store.$id);
+    },
     afterRestore: (ctx) => {
-        console.log(`piniaPluginPersistedstate 恢复了 store(${ctx.store.$id}) 的数据`);
+        console.timeEnd('piniaPluginPersistedstate ' + ctx.store.$id);
     },
     serializer: {
         serialize: value => JSON.stringify(value, replacer),

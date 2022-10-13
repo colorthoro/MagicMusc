@@ -1,9 +1,31 @@
 import { defineStore } from "pinia";
 import { Song } from "../tools/songsCache";
+import useSongListsStore from "../store/songLists";
+
+function syncQ(src, target) {
+    for (let i = 0; i < target.length; i++) {
+        if (!src.has(target[i].file_id)) continue;
+        let song = src.get(target[i].file_id);
+        if (song === target[i]) continue;
+        song.cnt = target[i].cnt;
+        target[i] = song;
+    }
+}
 
 export default defineStore('playingQ', {
     persist: {
-        paths: ['playingQ', 'nowIndex', 'history', 'playOrders', 'nowOrder']
+        paths: ['playingQ', 'nowIndex', 'history', 'playOrders', 'nowOrder'],
+        afterRestore(ctx) {
+            console.timeEnd('piniaPluginPersistedstate ' + ctx.store.$id);
+            const songLists = useSongListsStore();
+            console.time('sync playingQ');
+            for (const srcName of ['allSongs', 'binSongs']) {
+                syncQ(songLists[srcName], ctx.store.$state.playingQ);
+                syncQ(songLists[srcName], ctx.store.$state.history.normal);
+                syncQ(songLists[srcName], ctx.store.$state.history.recur);
+            }
+            console.timeEnd('sync playingQ');
+        }
     },
     state: () => ({
         playingQ: [],
