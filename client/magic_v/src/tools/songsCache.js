@@ -58,10 +58,10 @@ export async function getFileInfo(file_id) {
 export class Song {
     constructor(originObject) {
         let valid = this.test(originObject, true);
-        this.tags = [];
         this.valid = valid;
-        this.lost = false;
-        this.cnt = 0;
+        this.tags = originObject.tags || [];
+        this.lost = originObject.lost || false;
+        this.cnt = originObject.cnt || 0;
     }
     test(originObject, inject = false) {
         let list = [
