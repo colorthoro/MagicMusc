@@ -3,13 +3,14 @@ import { Song } from "../tools/songsCache";
 
 export default defineStore('playingQ', {
     persist: {
-        paths: ['playingQ', 'nowIndex', 'history', 'playOrder']
+        paths: ['playingQ', 'nowIndex', 'history', 'playOrders', 'nowOrder']
     },
     state: () => ({
         playingQ: [],
         nowIndex: -1,
         history: { max: 100, normal: [], recur: [] },
-        playOrder: 'queue' || 'one' || 'random',
+        playOrders: ['queue', 'one', 'random'],
+        nowOrder: 0,
         audio: null,
     }),
     getters: {
@@ -30,6 +31,9 @@ export default defineStore('playingQ', {
                 state.history.recur,
                 this.history.normal.slice(-1)
             );
+        },
+        playOrder(state) {
+            return state.playOrders[state.nowOrder %= state.playOrders.length];
         }
     },
     actions: {

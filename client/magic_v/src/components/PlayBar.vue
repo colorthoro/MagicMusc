@@ -4,6 +4,7 @@
       <button @click="last">上一首</button>
       <button @click="onOff">暂停/开始</button>
       <button @click="next">下一首</button>
+      模式：<button @click="this.nowOrder++">{{ playOrder }}</button>
       播放列表：
       <div v-for="song of playingQ" :key="song.file_id">
         {{ song.name }} {{ song.sameWith(recent) ? "***" : "---" }}
@@ -13,7 +14,7 @@
       历史列表：
       <div v-if="history.normal.length">
         <div v-for="hi of historyList" :key="hi.file_id">
-          {{ hi.name }}
+          {{ hi.name }} --- {{ hi.cnt }}
           <button @click="play(hi)">播放</button>
         </div>
       </div>
@@ -37,8 +38,15 @@ export default {
   name: "PlayBar",
   data: () => ({}),
   computed: {
-    ...mapWritableState(usePlayingQStore, ["playingQ", "history", "playOrder"]),
-    ...mapState(usePlayingQStore, ["historyList", "recent", "audio"]),
+    ...mapWritableState(usePlayingQStore, ["nowOrder"]),
+    ...mapState(usePlayingQStore, [
+      "playOrder",
+      "playingQ",
+      "history",
+      "historyList",
+      "recent",
+      "audio",
+    ]),
   },
   methods: {
     ...mapActions(usePlayingQStore, ["play", "del", "onOff", "next", "last"]),
