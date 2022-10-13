@@ -107,10 +107,7 @@ export default defineStore('playingQ', {
             }
             songOrSongs && this._addToPlaying(songOrSongs);
             let targetSong = this.nowToPlay;
-            if (!targetSong) {
-                console.error('请先选择歌曲吧！');
-                return;
-            }
+            if (!targetSong) { console.error('请先选择歌曲吧！'); return; }
             console.log('准备获取', targetSong);
             let blob = await targetSong.fetch();
             console.log('即将开始播放', blob);
@@ -120,8 +117,9 @@ export default defineStore('playingQ', {
             this.audio.controls = true;
             this.audio.play();
         },
-        pause() {
-            if (this.audio) this.audio.pause();
+        onOff(_, toStart) {  // 忽略在vue模板里直接使用时自动传递的事件对象，方便使用
+            toStart === undefined ? this.audio.paused ? this.audio.play() : this.audio.pause() :
+                toStart ? this.audio.play() : this.audio.pause();
         },
         next() {
             if (!this.playingQ.length) return;
