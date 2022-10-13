@@ -8,11 +8,13 @@
       <div v-for="song of playingQ" :key="song.file_id">
         {{ song.name }} {{ song === recent ? "***" : "---" }}
         <button @click="del(song)">删除</button>
+        <button @click="play(song)">播放</button>
       </div>
       历史列表：
       <div v-if="history.normal.length">
         <div v-for="hi of historyList" :key="hi.file_id">
           {{ hi.name }}
+          <button @click="play(hi)">播放</button>
         </div>
       </div>
       <!-- normal:
