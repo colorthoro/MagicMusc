@@ -2,6 +2,9 @@ import { defineStore } from "pinia";
 import { Song } from "../tools/songsCache";
 
 export default defineStore('playingQ', {
+    persist: {
+        paths: ['playingQ', 'nowIndex', 'history', 'playOrder']
+    },
     state: () => ({
         playingQ: [],
         nowIndex: -1,
@@ -54,8 +57,8 @@ export default defineStore('playingQ', {
         },
         del(song) {
             if (!this.playingQ.length) return;
-            let i = (song === this.playingQ[this.nowIndex]) ?
-                this.nowIndex : this.playingQ.indexOf(song);
+            let i = (song.sameWith(this.playingQ[this.nowIndex])) ?
+                this.nowIndex : this.playingQ.findIndex(v => song.sameWith(v));
             this.playingQ.splice(i, 1);
             if (i === this.nowIndex) {
                 this.nowIndex = i === this.playingQ.length ? i - 1 : i;
@@ -63,26 +66,27 @@ export default defineStore('playingQ', {
             } else if (i < this.nowIndex) this.nowIndex--;
         },
         _delAndInsert(song, insertWay) {
-            if (song === this.playingQ[this.nowIndex]) return;
+            if (song.sameWith(this.playingQ[this.nowIndex])) return;
             if (this.nowIndex < 0) this.nowIndex = 0;
-            let i = this.playingQ.indexOf(song);
+            let i = this.playingQ.findIndex(v => song.sameWith(v));
             if (i !== -1) this.playingQ.splice(i, 1);
             insertWay();  // 务必保证插入位置在nowIndex之后
         },
         _justOccupy(song) {
-            if (song === this.playingQ[this.nowIndex]) return;
-            let i = this.playingQ.indexOf(song);
+            if (song.sameWith(this.playingQ[this.nowIndex])) return;
+            let i = this.playingQ.findIndex(v => song.sameWith(v));
             if (i !== -1) { this.nowIndex = i; return; }
             this.nowIndex = Math.max(this.nowIndex, 0);
             this.playingQ.splice(this.nowIndex, 0, song);
         },
         _recordPlayed(song) {
             if (!(song instanceof Song)) return;
-            if (this.recent && song === this.recent.song) {
+            console.log(song, this.recent);
+            if (this.recent && song.sameWith(this.recent)) {
                 this.recent.cnt++;
                 return;
             }
-            let i = this.history.normal.indexOf(song);
+            let i = this.history.normal.findIndex(v => song.sameWith(v));
             if (i !== -1) this.history.normal.splice(i, 1)[0];
             song.cnt++;
             this.history.normal.push(song);
@@ -98,7 +102,7 @@ export default defineStore('playingQ', {
             this.history.recur = [];
         },
         async _play(songOrSongs) {
-            if (!this.audio) {
+            if (!(this.audio instanceof Audio)) {
                 var audio = new Audio();
                 this.audio = audio;
             } else if (this.audio.src && !this.audio.paused) {
@@ -118,7 +122,8 @@ export default defineStore('playingQ', {
             this.audio.play();
         },
         onOff(_, toStart) {  // 忽略在vue模板里直接使用时自动传递的事件对象，方便使用
-            toStart === undefined ? this.audio.paused ? this.audio.play() : this.audio.pause() :
+            !(this.audio instanceof Audio) ? this.play() : toStart === undefined ?
+                this.audio.paused ? this.audio.play() : this.audio.pause() :
                 toStart ? this.audio.play() : this.audio.pause();
         },
         next() {
@@ -137,8 +142,8 @@ export default defineStore('playingQ', {
                 do {
                     this.nowIndex = Math.floor(Math.random() * this.playingQ.length);
                 } while (
-                    this.nowToPlay === this.recent.song || (
-                        limit-- && this.historyList.find(hi => hi === this.nowToPlay)
+                    this.nowToPlay.sameWith(this.recent) || (
+                        limit-- && this.historyList.find(v => this.nowToPlay.sameWith(v))
                     )
                 );
             }

@@ -6,7 +6,7 @@
       <button @click="next">下一首</button>
       播放列表：
       <div v-for="song of playingQ" :key="song.file_id">
-        {{ song.name }} {{ song === recent ? "***" : "---" }}
+        {{ song.name }} {{ song.sameWith(recent) ? "***" : "---" }}
         <button @click="del(song)">删除</button>
         <button @click="play(song)">播放</button>
       </div>

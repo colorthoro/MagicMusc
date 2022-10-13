@@ -82,6 +82,9 @@ export class Song {
         }
         return valid;
     }
+    sameWith(song) {
+        return (song instanceof Song) && (this.content_hash === song.content_hash);
+    }
     async fetch() {
         try {
             let res = await fetchMusic(this.content_hash, this.download_url);
