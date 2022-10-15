@@ -24,9 +24,10 @@ const useSongListsStore = defineStore('songLists', {
             if (!targetList) return;
             let k = 0;
             songs.forEach(song => {
-                song = new Song(song);
-                if (!song.valid) return;
                 if (!targetList.has(song.file_id)) {
+                    song = new Song(song);
+                    if (!song.valid) return;
+                    listName != 'binSongs' && this.binSongs.delete(song.file_id);
                     targetList.set(song.file_id, song);
                 }
             });
