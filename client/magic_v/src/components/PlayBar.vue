@@ -36,6 +36,8 @@
           <div
             class="progress-bar"
             ref="progressBar"
+            @mouseenter="showProgressBtn = this.audio ? true : false"
+            @mouseleave="showProgressBtn = false"
             @click="setPercent($event.clientX)"
           >
             <div class="bar-inner">
@@ -43,6 +45,7 @@
                 <div
                   class="progress-btn"
                   ref="progressBtn"
+                  v-show="showProgressBtn"
                   @mousedown="dragSet($event)"
                   @touchmove="dragSet($event)"
                   @touchend="dragSet($event)"
@@ -59,12 +62,12 @@
 <script>
 import { mapState, mapWritableState, mapActions } from "pinia";
 import usePlayingQStore from "../store/playingQ";
-import { formalTime } from "../tools/time";
+import { formalTime, isMobile } from "../tools/others";
 
 export default {
   name: "PlayBar",
   data() {
-    return {};
+    return { showProgressBtn: isMobile() };
   },
   computed: {
     ...mapWritableState(usePlayingQStore, ["nowOrder"]),
