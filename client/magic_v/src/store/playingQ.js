@@ -133,8 +133,8 @@ export default defineStore('playingQ', {
                 if (this.playOrder === 'one') this.audio.play();
                 else this.next();
             });
-            audio.addEventListener('timeupdate', () => { this.currentTime = this.audio.currentTime.toFixed(0) });
-            audio.addEventListener('loadedmetadata', () => { this.duration = this.audio.duration.toFixed(0) });
+            audio.addEventListener('timeupdate', () => { this.currentTime = parseInt(this.audio.currentTime) });
+            audio.addEventListener('loadedmetadata', () => { this.duration = parseInt(this.audio.duration) });
         },
         async _play(songOrSongs) {
             if (!(this.audio instanceof Audio)) {

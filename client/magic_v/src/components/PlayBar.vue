@@ -36,11 +36,15 @@
           <div
             class="progress-bar"
             ref="progressBar"
-            @click.capture="progressClick"
+            @click="setPercent($event.clientX)"
           >
             <div class="bar-inner">
               <div class="progress" ref="progress">
-                <div class="progress-btn"></div>
+                <div
+                  class="progress-btn"
+                  ref="progressBtn"
+                  @mousedown="dragSet($event)"
+                ></div>
               </div>
             </div>
           </div>
@@ -77,17 +81,41 @@ export default {
         return (this.duration ? this.currentTime / this.duration : 0) * 100;
       },
       set(val) {
+        val = Math.min(1, Math.max(val, 0));
         if (this.audio) this.audio.currentTime = this.duration * val;
       },
+    },
+    cursor() {
+      return this.audio ? "pointer" : "default";
     },
   },
   methods: {
     ...mapActions(usePlayingQStore, ["play", "del", "onOff", "next", "last"]),
     formalTime,
-    progressClick(e) {
-      let rect = e.currentTarget.getBoundingClientRect();
+    setPercent(x) {
+      if (!this.audio) return;
+      let rect = this.$refs.progressBar.getBoundingClientRect();
       // 点击事件有可能被子元素触发，那时offsetX就是相对于子元素了，所以不能用。
-      this.percent = Math.max(0, e.clientX - rect.x) / rect.width;
+      this.percent = (x - rect.x) / rect.width;
+    },
+    dragSet(e) {
+      if (!this.audio) return;
+      e.preventDefault();
+      let playing = !this.audio.paused,
+        mousemove = document.onmousemove,
+        mouseup = document.onmouseup;
+      document.onmousemove = (me) => {
+        me.preventDefault();
+        this.onOff(0, false);
+        this.setPercent(me.clientX);
+      };
+      document.onmouseup = (ue) => {
+        ue.preventDefault;
+        this.onOff(0, playing);
+        document.onmousemove = mousemove;
+        document.onmouseup = mouseup;
+      };
+      return false;
     },
   },
   watch: {
@@ -110,7 +138,7 @@ export default {
     margin: 0 10px;
     .progress-bar {
       height: 30px;
-      cursor: pointer;
+      cursor: v-bind(cursor);
       .bar-inner {
         position: relative;
         top: 50%;
