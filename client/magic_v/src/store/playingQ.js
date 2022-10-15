@@ -34,6 +34,8 @@ export default defineStore('playingQ', {
         playOrders: ['queue', 'one', 'random'],
         nowOrder: 0,
         audio: null,
+        currentTime: 0,
+        duration: 0,
     }),
     getters: {
         nowToPlay(state) {
@@ -126,9 +128,18 @@ export default defineStore('playingQ', {
             );
             this.history.recur = [];
         },
+        _initAudio(audio) {
+            audio.addEventListener('ended', () => {
+                if (this.playOrder === 'one') this.audio.play();
+                else this.next();
+            });
+            audio.addEventListener('timeupdate', () => { this.currentTime = this.audio.currentTime.toFixed(0) });
+            audio.addEventListener('loadedmetadata', () => { this.duration = this.audio.duration.toFixed(0) });
+        },
         async _play(songOrSongs) {
             if (!(this.audio instanceof Audio)) {
                 var audio = new Audio();
+                this._initAudio(audio);
                 this.audio = audio;
             } else if (this.audio.src && !this.audio.paused) {
                 this.audio.pause();
@@ -153,16 +164,12 @@ export default defineStore('playingQ', {
         },
         next() {
             if (!this.playingQ.length) return;
-            if (this.playOrder === 'one') { this.play(); return; }
             if (this.history.recur.length) {
                 this.history.normal.push(this.history.recur.pop());
                 this._play(this.recent);
                 return;
             }
-            if (this.playOrder === 'queue') {
-                this.nowIndex++;
-                this.nowIndex %= this.playingQ.length;
-            } else if (this.playOrder === 'random') {
+            if (this.playOrder === 'random') {
                 let limit = 3;
                 do {
                     this.nowIndex = Math.floor(Math.random() * this.playingQ.length);
@@ -171,12 +178,14 @@ export default defineStore('playingQ', {
                         limit-- && this.historyList.find(v => this.nowToPlay.sameWith(v))
                     )
                 );
+            } else {
+                this.nowIndex++;
+                this.nowIndex %= this.playingQ.length;
             }
             this._play();
         },
         last() {
             if (!this.history.normal.length || !this.playingQ.length) return;
-            if (this.playOrder === 'one') { this.play(); return; }
             if (this.history.normal.length === 1) {
                 this._play();
                 return;
