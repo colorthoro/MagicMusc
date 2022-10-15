@@ -44,6 +44,8 @@
                   class="progress-btn"
                   ref="progressBtn"
                   @mousedown="dragSet($event)"
+                  @touchmove="dragSet($event)"
+                  @touchend="dragSet($event)"
                 ></div>
               </div>
             </div>
@@ -101,8 +103,17 @@ export default {
     dragSet(e) {
       if (!this.audio) return;
       e.preventDefault();
-      let playing = !this.audio.paused,
-        mousemove = document.onmousemove,
+      let playing;
+      if (e.type === "touchstart" || e.type === "mousedown") {
+        playing = !this.audio.paused;
+      } else if (e.type === "touchend") {
+        this.onOff(0, playing);
+      } else if (e.type === "touchmove") {
+        this.onOff(0, false);
+        this.setPercent(e.touches[0].clientX);
+      }
+      if (!(e instanceof MouseEvent)) return;
+      let mousemove = document.onmousemove,
         mouseup = document.onmouseup;
       document.onmousemove = (me) => {
         me.preventDefault();
@@ -115,7 +126,6 @@ export default {
         document.onmousemove = mousemove;
         document.onmouseup = mouseup;
       };
-      return false;
     },
   },
   watch: {
