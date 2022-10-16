@@ -18,8 +18,19 @@ export function apiGetFileInfo(file_id) {
         params: { file_id }
     });
 }
-export function apiGetLyric() {
-    return;
+export function apiSuggestSongsInfo(keywords) {
+    return axios({
+        method: 'get',
+        url: 'https://netease-music-api.fe-mm.com/search/suggest',
+        params: { keywords, limit: 50, offset: 0 },
+    });
+}
+export function apiGetLyric(id) {
+    return axios({
+        method: 'get',
+        url: 'https://netease-music-api.fe-mm.com/lyric',
+        params: { id }
+    });
 }
 export function apiRegister(user_id, sp) {
     return axios({

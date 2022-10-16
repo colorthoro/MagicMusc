@@ -17,6 +17,7 @@
           <button @click="play(song)">播放</button>
           <button @click="addNextPlay(song)">添加到下一首</button>
           <button @click="addQueuePlay(song)">添加到队列尾</button>
+          <LyricSearch :song="song" />
         </div>
       </div>
       <div class="bin">
@@ -41,11 +42,15 @@
 import { mapState, mapActions } from "pinia";
 import useSongListsStore from "../store/songLists";
 import usePlayingQStore from "../store/playingQ";
+import LyricSearch from "./LyricSearch";
 
 export default {
   name: "SongList",
   data() {
     return {};
+  },
+  components: {
+    LyricSearch,
   },
   computed: {
     ...mapState(useSongListsStore, ["allSongs", "binSongs"]),

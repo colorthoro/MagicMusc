@@ -47,6 +47,7 @@ export class Song {
         this.tags = originObject.tags || [];
         this.lost = originObject.lost || false;
         this.cnt = originObject.cnt || 0;
+        this.lyric = originObject.lyric || '';
     }
     test(originObject, inject = false) {
         let list = [
@@ -93,6 +94,9 @@ export class Song {
             return true;
         }
         return false;
+    }
+    fillLrc(lrc) {
+        this.lyric = lrc;
     }
 }
 

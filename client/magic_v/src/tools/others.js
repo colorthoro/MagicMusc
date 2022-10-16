@@ -19,3 +19,9 @@ export function isMobile() {
         return flag;
     })();
 }
+
+export function splitSongName(fileName) {
+    let splitPat = / *[-_. ]+ */;
+    fileName = fileName.split('.')[0];
+    return fileName.split(splitPat);
+}
