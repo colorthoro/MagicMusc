@@ -1,4 +1,4 @@
-import axios from "axios";
+import { apiDownloadMusic, apiGetFileInfo } from "../tools/api";
 import Dexie from "dexie";
 
 const db = new Dexie("magic_music");
@@ -12,12 +12,7 @@ export async function fetchMusic(hash, url) {
         console.log('已从本地IndexedDB取得文件', hash, test);
         return test.file;
     }
-    let res = await axios({
-        method: "post",
-        url: "api/dw",
-        data: { hash, url },
-        responseType: "blob",
-    });
+    let res = await apiDownloadMusic(hash, url);
     if (res.data.type !== 'application/octet-stream') {
         throw await res.data.text();
     }
@@ -43,16 +38,6 @@ export async function dbGet(content_hash) {
     if (res) console.log('successed to get it from IndexedDB', res);
     else console.log('not in the IndexedDB!');
     return res;
-}
-
-export async function getFileInfo(file_id) {
-    console.log('正在尝试获取文件信息', file_id);
-    let res = await axios({
-        method: 'get',
-        url: 'api/getf',
-        params: { file_id }
-    });
-    return res.data;
 }
 
 export class Song {
@@ -100,9 +85,10 @@ export class Song {
     }
     async updateUrl() {
         // 根据file_id重新获取文件信息，比对download_url，不同则赋值，并改变this.lost
-        let res = await getFileInfo(this.file_id);
-        if (res.download_url && res.download_url !== this.download_url) {
-            this.download_url = res.download_url;
+        console.log('正在尝试获取文件信息', this.file_id);
+        let res = await apiGetFileInfo(this.file_id);
+        if (res.data.download_url && res.data.download_url !== this.download_url) {
+            this.download_url = res.data.download_url;
             console.log('更新下载链接成功！');
             return true;
         }

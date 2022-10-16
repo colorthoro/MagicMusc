@@ -1,4 +1,4 @@
-import axios from 'axios';
+import { apiScanMusic } from '../tools/api';
 import { defineStore } from 'pinia';
 import { Song } from '../tools/songsCache'
 
@@ -57,7 +57,7 @@ const useSongListsStore = defineStore('songLists', {
             return true;
         },
         async getAllSongsFromCloud() {
-            let res = await axios.get('api/scanMusic');
+            let res = await apiScanMusic();
             this.putIntoList({ songs: res.data, listName: 'allSongs' });
         }
     }
