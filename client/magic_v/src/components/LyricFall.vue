@@ -1,5 +1,10 @@
 <template>
   <div>
+    <div>
+      <button @click="offsetTime -= 0.5">放慢0.5s</button>
+      <span>{{ offsetTime }}</span>
+      <button @click="offsetTime += 0.5">加快0.5s</button>
+    </div>
     <div class="scroller" ref="scroller">
       <div class="plate">
         <div
@@ -24,7 +29,7 @@ import usePlayingQStore from "../store/playingQ";
 export default {
   name: "LyricFall",
   data() {
-    return { playing: true };
+    return { playing: true, offsetTime: 0 };
   },
   computed: {
     ...mapState(usePlayingQStore, ["recent", "accurateTime", "audio"]),
@@ -50,14 +55,16 @@ export default {
       get() {
         let i = 0;
         for (; i < this.lrcRows.timePoint.length; i++) {
-          let t = this.lrcRows.timePoint[i];
+          let t = this.lrcRows.timePoint[i] - this.offsetTime;
           if (t > this.accurateTime) return i ? i - 1 : 0;
         }
         return i === this.lrcRows.timePoint.length ? i - 1 : -1;
       },
       set(index) {
         if (index < 0 || index >= this.lrcRows.timePoint.length) return;
-        if (this.audio) this.audio.currentTime = this.lrcRows.timePoint[index];
+        if (this.audio)
+          this.audio.currentTime =
+            this.lrcRows.timePoint[index] - this.offsetTime;
       },
     },
   },
