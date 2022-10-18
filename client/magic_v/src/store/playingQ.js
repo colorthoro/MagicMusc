@@ -35,6 +35,7 @@ export default defineStore('playingQ', {
         nowOrder: 0,
         audio: null,
         currentTime: 0,
+        accurateTime: 0,
         duration: 0,
     }),
     getters: {
@@ -133,8 +134,11 @@ export default defineStore('playingQ', {
                 if (this.playOrder === 'one') this.audio.play();
                 else this.next();
             });
-            audio.addEventListener('timeupdate', () => { this.currentTime = parseInt(this.audio.currentTime) });
-            audio.addEventListener('loadedmetadata', () => { this.duration = parseInt(this.audio.duration) });
+            audio.addEventListener('timeupdate', () => {
+                this.currentTime = parseInt(this.audio.currentTime);
+                this.accurateTime = this.audio.currentTime;
+            });
+            audio.addEventListener('loadedmetadata', () => { this.duration = parseInt(this.audio.duration); });
         },
         async _play(songOrSongs) {
             if (!(this.audio instanceof Audio)) {
