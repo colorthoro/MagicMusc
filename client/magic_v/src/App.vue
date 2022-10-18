@@ -2,12 +2,14 @@
   <login-or-register />
   <song-list />
   <play-bar />
+  <lyric-fall />
 </template>
 
 <script>
 import LoginOrRegister from "./components/loginOrRegister";
 import SongList from "./components/SongList";
 import PlayBar from "./components/PlayBar";
+import LyricFall from "./components/LyricFall";
 
 export default {
   name: "App",
@@ -15,6 +17,7 @@ export default {
     SongList,
     LoginOrRegister,
     PlayBar,
+    LyricFall,
   },
 };
 </script>

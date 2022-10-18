@@ -66,5 +66,9 @@ export default {
 };
 </script>
 
-<style>
+<style scoped>
+.container {
+  height: 10rem;
+  overflow: auto;
+}
 </style>
