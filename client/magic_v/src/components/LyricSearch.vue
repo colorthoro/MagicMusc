@@ -27,17 +27,16 @@ export default {
     },
   },
   methods: {
-    findBestMatch() {
-      for (let j = 0; j < this.resultSongs.length; j++) {
-        let song = this.resultSongs[j];
-        console.log(song);
+    findBestMatch(partlyResults, partlyKeys) {
+      for (let j = 0; j < partlyResults.length; j++) {
+        let song = partlyResults[j];
         for (let k = 0; k < song.artists.length; k++) {
           let author = song.artists[k].name;
-          console.log(author);
-          if (this.keys.findIndex((key) => key.indexOf(author) !== -1) !== -1) {
+          if (partlyKeys.indexOf(author) !== -1) {
+            console.log("猜测最佳匹配：", song, author);
             this.bestIndex = j;
             return;
-          }
+          } else console.log(song, author);
         }
       }
     },
@@ -49,17 +48,23 @@ export default {
         if (res.code !== 200 || !res.result.songs) continue;
         console.log(res.result.songs);
         this.resultSongs = this.resultSongs.concat(res.result.songs);
+        this.findBestMatch(
+          res.result.songs,
+          this.keys.slice(0, i).concat(this.keys.slice(i + 1, this.keys.length))
+        );
+        console.log("ok");
         await new Promise((ok) => setTimeout(ok, 500));
       }
     },
     async queryLyric() {
       this.keys = splitSongName(this.song.name);
       await this.findAllResultSongs();
-      this.findBestMatch();
-      if (this.bestMatch)
-        this.song.fillLrc(
-          (await apiGetLyric(this.bestMatch.id)).data.lrc.lyric
-        );
+      if (this.bestMatch) {
+        console.log("最终匹配：", this.bestMatch);
+        let lrc = (await apiGetLyric(this.bestMatch.id)).data.lrc.lyric;
+        console.log("得到歌词：", lrc);
+        this.song.fillLrc(lrc);
+      }
     },
   },
 };
