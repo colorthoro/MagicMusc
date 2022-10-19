@@ -131,14 +131,14 @@ export default defineStore('playingQ', {
         },
         _initAudio(audio) {
             audio.addEventListener('ended', () => {
-                if (this.playOrder === 'one') this.audio.play();
+                if (this.playOrder === 'one') audio.play();
                 else this.next();
             });
             audio.addEventListener('timeupdate', () => {
-                this.currentTime = parseInt(this.audio.currentTime);
-                this.accurateTime = this.audio.currentTime;
+                this.currentTime = parseInt(audio.currentTime);
+                this.accurateTime = audio.currentTime;
             });
-            audio.addEventListener('loadedmetadata', () => { this.duration = parseInt(this.audio.duration); });
+            audio.addEventListener('loadedmetadata', () => { this.duration = parseInt(audio.duration); });
         },
         async _play(songOrSongs) {
             if (!(this.audio instanceof Audio)) {
