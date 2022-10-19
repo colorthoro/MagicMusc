@@ -1,4 +1,4 @@
-import { apiSuggestSongsInfo, apiGetLyric } from "../tools/api";
+import { apiSuggestSongsInfo, apiGetLyric } from "./api";
 
 export function splitSongName(fileName) {
     let splitPat = / *[-_.,，、/]+ */;

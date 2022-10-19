@@ -12,7 +12,7 @@
           @mouseleave="playing = true"
           v-for="(row, index) of lrcRows.rows"
           :class="rowClass(index)"
-          @click="(nowIndex = index), (playing = true)"
+          @click="setIndex(index), (playing = true)"
           :key="index"
         >
           {{ row }}
@@ -23,60 +23,20 @@
 </template>
 
 <script>
-import { mapState } from "pinia";
-import usePlayingQStore from "../store/playingQ";
-import { queryLyric } from "../tools/lyric";
+import { mapActions, mapState, mapWritableState } from "pinia";
+import useLyricStore from "../store/lyric";
 
 export default {
   name: "LyricFall",
   data() {
-    return { playing: true, offsetTime: 0 };
+    return { playing: true };
   },
   computed: {
-    ...mapState(usePlayingQStore, ["recent", "accurateTime", "audio"]),
-    lrcRows() {
-      if (
-        !this.recent ||
-        (!this.recent.lyric.length && !queryLyric(this.recent))
-      )
-        return { rows: [], timePoint: [] };
-      let lrc = this.recent.lyric;
-      let it = lrc.matchAll(
-        /(\[(?<min>\d+):(?<sec>\d+(\.\d+){0,1})\])(?<content>.*)\n/g
-      );
-      let current = it.next();
-      let rows = [];
-      let timePoint = [];
-      while (!current.done) {
-        let groups = current.value.groups;
-        rows.push(groups.content.trim());
-        timePoint.push(Number(groups.min) * 60 + Number(groups.sec));
-        current = it.next();
-      }
-      return { rows, timePoint };
-    },
-    nowIndex: {
-      get() {
-        let lb = -1,
-          mid,
-          ub = this.lrcRows.timePoint.length;
-        while (lb < ub - 1) {
-          mid = (lb + ub) >> 1;
-          if (this.lrcRows.timePoint[mid] - this.offsetTime > this.accurateTime)
-            ub = mid;
-          else lb = mid;
-        }
-        return Math.max(ub - 1, 0);
-      },
-      set(index) {
-        if (index < 0 || index >= this.lrcRows.timePoint.length) return;
-        if (this.audio)
-          this.audio.currentTime =
-            this.lrcRows.timePoint[index] - this.offsetTime;
-      },
-    },
+    ...mapState(useLyricStore, ["lrcRows", "nowIndex", "nowSentence"]),
+    ...mapWritableState(useLyricStore, ["offsetTime"]),
   },
   methods: {
+    ...mapActions(useLyricStore, ["setIndex"]),
     rowClass(index) {
       return ["row", index == this.nowIndex ? "now" : ""];
     },
