@@ -25,6 +25,7 @@
 <script>
 import { mapState } from "pinia";
 import usePlayingQStore from "../store/playingQ";
+import { queryLyric } from "../tools/lyric";
 
 export default {
   name: "LyricFall",
@@ -34,7 +35,10 @@ export default {
   computed: {
     ...mapState(usePlayingQStore, ["recent", "accurateTime", "audio"]),
     lrcRows() {
-      if (!this.recent || !this.recent.lyric.length)
+      if (
+        !this.recent ||
+        (!this.recent.lyric.length && !queryLyric(this.recent))
+      )
         return { rows: [], timePoint: [] };
       let lrc = this.recent.lyric;
       let it = lrc.matchAll(
