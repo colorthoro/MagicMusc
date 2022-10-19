@@ -80,7 +80,7 @@ export class Song {
                 this.lost = true;
                 console.error('无效下载链接');
                 this.lost = ! await this.updateUrl();
-                if (!this.lost) await this.fetch();
+                if (!this.lost) return await this.fetch();
             }
         }
     }
