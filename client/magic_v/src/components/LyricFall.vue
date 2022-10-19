@@ -57,12 +57,16 @@ export default {
     },
     nowIndex: {
       get() {
-        let i = 0;
-        for (; i < this.lrcRows.timePoint.length; i++) {
-          let t = this.lrcRows.timePoint[i] - this.offsetTime;
-          if (t > this.accurateTime) return i ? i - 1 : 0;
+        let lb = -1,
+          mid,
+          ub = this.lrcRows.timePoint.length;
+        while (lb < ub - 1) {
+          mid = (lb + ub) >> 1;
+          if (this.lrcRows.timePoint[mid] - this.offsetTime > this.accurateTime)
+            ub = mid;
+          else lb = mid;
         }
-        return i === this.lrcRows.timePoint.length ? i - 1 : -1;
+        return Math.max(ub - 1, 0);
       },
       set(index) {
         if (index < 0 || index >= this.lrcRows.timePoint.length) return;
