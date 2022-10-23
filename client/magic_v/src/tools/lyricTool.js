@@ -1,4 +1,4 @@
-import { apiSuggestSongsInfo, apiGetLyric } from "./api";
+import { apiSuggestSongsInfo, apiGetLyric, apiGetLyricFromYun } from "./api";
 
 export function splitSongName(fileName) {
     let splitPat = / *[-_.,，、/]+ */;
@@ -41,7 +41,6 @@ async function findAllResultSongs(keys) {
         console.log("ok");
         await new Promise((ok) => setTimeout(ok, 500));
     }
-    if (best === -1 && resultSongs.length) best = 0;
     return { best, resultSongs };
 }
 export async function queryLyric(song) {
@@ -56,4 +55,14 @@ export async function queryLyric(song) {
         return true;
     }
     return false;
+}
+export async function queryLyricFromYun(song) {
+    let res = (await apiGetLyricFromYun(song.name)).data;
+    if (!res.length || res === 'not found') {
+        console.log('云上未找到歌词');
+        return false;
+    }
+    console.log('从云上找到歌词：', res);
+    song.fillLrc(res);
+    return true;
 }
