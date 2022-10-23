@@ -9,13 +9,15 @@ export function formalTime(secs) {
     return fixedInt(mins) + ':' + fixedInt(secs);
 }
 
-export function isMobile() {
+function isMobileMaker() {
     let flag;
-    return (() => {
+    return () => {
         if (flag === undefined) {
             console.log('wow');
-            flag = navigator.userAgent.match(/(phone|pad|pod|iPhone|iPod|ios|iPad|Android|Mobile|BlackBerry|IEMobile|MQQBrowser|JUC|Fennec|wOSBrowser|BrowserNG|WebOS|Symbian|Windows Phone)/i);
+            flag = /(phone|pad|pod|iPhone|iPod|ios|iPad|Android|Mobile|BlackBerry|IEMobile|MQQBrowser|JUC|Fennec|wOSBrowser|BrowserNG|WebOS|Symbian|Windows Phone)/i
+                .test(navigator.userAgent);
         } else console.log('old');
         return flag;
-    })();
+    };
 }
+export const isMobile = isMobileMaker();
