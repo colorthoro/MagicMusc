@@ -1,6 +1,6 @@
 import { defineStore, mapState } from "pinia";
 import usePlayingQStore from "../store/playingQ";
-import { queryLyric } from "../tools/lyricTool";
+import { queryLyric, queryLyricFromYun } from "../tools/lyricTool";
 
 
 const useLyricStore = defineStore("lyric", {
@@ -10,14 +10,14 @@ const useLyricStore = defineStore("lyric", {
     getters: {
         ...mapState(usePlayingQStore, ["recent", "accurateTime", "audio"]),
         lrcRows() {
-            if (
-                !this.recent ||
-                (!this.recent.lyric.length && !queryLyric(this.recent))
-            )
-                return { rows: [], timePoint: [] };
+            if (!this.audio || !this.recent || (
+                !this.recent.lyric.length
+                && !queryLyricFromYun(this.recent)
+                && !queryLyric(this.recent)
+            )) return { rows: [], timePoint: [] };
             let lrc = this.recent.lyric;
             let it = lrc.matchAll(
-                /(\[(?<min>\d+):(?<sec>\d+(\.\d+){0,1})\])(?<content>.*)\n/g
+                /(\[(?<min>\d+):(?<sec>\d+(\.\d+){0,1})\])(?<content>[^[]*)/g
             );
             let current = it.next();
             let rows = [];
@@ -53,6 +53,9 @@ const useLyricStore = defineStore("lyric", {
                 this.audio.currentTime =
                     this.lrcRows.timePoint[index] - this.offsetTime;
         },
+        resetLrc(lrc = '') {
+            if (this.recent) this.recent.fillLrc(lrc);
+        }
     }
 });
 export default useLyricStore;

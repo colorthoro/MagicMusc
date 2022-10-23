@@ -32,6 +32,13 @@ export function apiGetLyric(id) {
         params: { id }
     });
 }
+export function apiGetLyricFromYun(name) {
+    return axios({
+        method: 'get',
+        url: 'api/getLrc',
+        params: { name }
+    });
+}
 export function apiRegister(user_id, sp) {
     return axios({
         url: 'api/register',
