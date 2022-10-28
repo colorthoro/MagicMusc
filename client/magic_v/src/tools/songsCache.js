@@ -98,6 +98,11 @@ export class Song {
     fillLrc(lrc) {
         this.lyric = lrc;
     }
+    addTag(tagName) {
+        if (this.tags.indexOf(tagName) === -1)
+            this.tags.push(tagName);
+        console.log(this.name, '已添加标签：', tagName);
+    }
 }
 
 export function replacer(key, value) {

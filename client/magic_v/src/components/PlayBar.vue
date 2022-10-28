@@ -1,183 +1,256 @@
 <template>
-  <div>
-    <div class="container">
-      <button @click="last">上一首</button>
-      <button @click="onOff">暂停/开始</button>
-      <button @click="next">下一首</button>
-      模式：<button @click="this.nowOrder++">{{ playOrder }}</button>
-      播放列表：
-      <div v-for="song of playingQ" :key="song.file_id">
-        {{ song.name }} {{ song.sameWith(recent) ? "***" : "---" }}
-        <button @click="del(song)">删除</button>
-        <button @click="play(song)">播放</button>
-      </div>
-      历史列表：
-      <div v-if="history.normal.length">
-        <div v-for="hi of historyList" :key="hi.file_id">
-          {{ hi.name }} --- {{ hi.cnt }}
-          <button @click="play(hi)">播放</button>
-        </div>
-      </div>
-      <!-- normal:
-      <div v-for="hi of history.normal" :key="hi.file_id">
-        {{ hi.name }}
-      </div>
-      recur:
-      <div v-for="hi of history.recur" :key="hi.file_id">
-        {{ hi.name }}
-      </div> -->
-      <!-- 进度条 -->
-      <div class="progress-wrapper">
-        <!-- 时间显示 -->
-        <span class="time"
-          >{{ formalTime(currentTime) }}|{{ formalTime(duration) }}</span
-        >
-        <div class="progress-bar-wrapper">
-          <div
-            class="progress-bar"
-            ref="progressBar"
-            @mouseenter="showProgressBtn = this.audio ? true : false"
-            @mouseleave="showProgressBtn = false"
-            @click="setPercent($event.clientX)"
-          >
-            <div class="bar-inner">
-              <div class="progress" ref="progress">
-                <div
-                  class="progress-btn"
-                  ref="progressBtn"
-                  v-show="showProgressBtn"
-                  @mousedown="dragSet($event)"
-                  @touchmove="dragSet($event)"
-                  @touchend="dragSet($event)"
-                ></div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+  <div class="container">
+    <div class="song">{{ nowSentence }}</div>
+    <div class="controlls">
+      <font-awesome-icon
+        @click="last"
+        icon="fa-solid fa-backward-step"
+      ></font-awesome-icon>
+      <font-awesome-icon
+        @click="onOff"
+        v-if="!this.audio || this.audio.paused"
+        icon="fa-solid fa-circle-play"
+        style="background-color: white; border-radius: 50%"
+      />
+      <font-awesome-icon
+        @click="onOff"
+        v-else
+        icon="fa-solid fa-circle-pause"
+        style="background-color: white; border-radius: 50%"
+      />
+      <font-awesome-icon
+        @click="next"
+        icon="fa-solid fa-forward-step"
+      ></font-awesome-icon>
     </div>
+    <div class="mode">
+      <span class="time">
+        {{ formalTime(currentTime) }}|{{ formalTime(duration) }}
+      </span>
+      <div class="volume">
+        <div class="icon" @click="if (audio) audio.muted = !audio.muted;">
+          <font-awesome-icon
+            icon="fa-solid fa-volume-xmark"
+            v-if="audio?.muted"
+          />
+          <font-awesome-icon
+            icon="fa-solid fa-volume-high"
+            v-else-if="volumeControll > 50"
+          />
+          <font-awesome-icon
+            icon="fa-solid fa-volume-low"
+            v-else-if="volumeControll > 0"
+          />
+          <font-awesome-icon
+            icon="fa-solid fa-volume-off"
+            v-else-if="volumeControll === 0"
+          />
+        </div>
+        <div class="progress">
+          <ProgressSlider
+            :disabled="!audio"
+            :max="100"
+            v-model="volumeControll"
+          ></ProgressSlider>
+        </div>
+      </div>
+      <div class="order" @click="nowOrder++">
+        <font-awesome-layers>
+          <font-awesome-icon
+            v-if="playOrder === 'random'"
+            icon="fa-solid fa-shuffle"
+          />
+          <font-awesome-icon v-else icon="fa-solid fa-repeat" />
+          <font-awesome-icon
+            v-if="playOrder === 'one'"
+            icon="fa-solid fa-1"
+            transform="shrink-10"
+          />
+        </font-awesome-layers>
+      </div>
+      <el-popover
+        placement="top"
+        width="18em"
+        trigger="click"
+        :hide-after="0"
+        transition="el-zoom-in-bottom"
+        :persistent="false"
+        @before-enter="mountList"
+        @hide="unmountList"
+      >
+        <template #reference>
+          <div>
+            <font-awesome-icon icon="fa-solid fa-bars"> </font-awesome-icon>
+          </div>
+        </template>
+        <!-- <div style="height: 50vh"> -->
+        <PlayList style="height: 50vh" v-if="callPlayList" />
+        <!-- </div> -->
+      </el-popover>
+    </div>
+    <!-- 进度条 -->
+    <ProgressSlider
+      style="position: absolute; top: 0; transform: translate(0, -50%)"
+      :disabled="!audio"
+      :max="duration - 1"
+      :beforeDrag="() => !audio.paused"
+      :onDrag="() => onOff(0, false)"
+      :afterDrag="(remain) => onOff(0, remain)"
+      v-model="currentTimeControll"
+    ></ProgressSlider>
   </div>
 </template>
 
 <script>
 import { mapState, mapWritableState, mapActions } from "pinia";
 import usePlayingQStore from "../store/playingQ";
-import { formalTime, isMobile } from "../tools/others";
+import useLyricStore from "../store/lyric";
+import { formalTime } from "../tools/others";
+import { defineAsyncComponent } from "vue";
+const PlayList = defineAsyncComponent(() => import("./PlayList"));
+const ProgressSlider = defineAsyncComponent(() =>
+  import("../base/ProgressSlider")
+);
 
 export default {
   name: "PlayBar",
+  props: {
+    height: {
+      type: String,
+      default: "3rem",
+    },
+  },
   data() {
-    return { showProgressBtn: isMobile() };
+    return {
+      timeout: null,
+      callPlayList: false,
+    };
   },
   computed: {
     ...mapWritableState(usePlayingQStore, ["nowOrder"]),
     ...mapState(usePlayingQStore, [
       "playOrder",
-      "playingQ",
-      "history",
-      "historyList",
-      "recent",
       "audio",
       "currentTime",
       "duration",
+      "volume",
     ]),
-    percent: {
+    ...mapState(useLyricStore, ["nowSentence"]),
+    volumeControll: {
       get() {
-        return (this.duration ? this.currentTime / this.duration : 0) * 100;
+        return parseInt(this.volume * 100);
       },
       set(val) {
-        val = Math.min(1, Math.max(val, 0));
-        if (this.audio) this.audio.currentTime = this.duration * val;
+        if (this.audio) this.audio.volume = val / 100;
       },
     },
-    cursor() {
-      return this.audio ? "pointer" : "default";
+    currentTimeControll: {
+      get() {
+        return this.currentTime;
+      },
+      set(val) {
+        if (this.audio) this.audio.currentTime = val;
+      },
     },
   },
   methods: {
-    ...mapActions(usePlayingQStore, ["play", "del", "onOff", "next", "last"]),
+    ...mapActions(usePlayingQStore, ["onOff", "next", "last"]),
     formalTime,
-    setPercent(x) {
-      if (!this.audio) return;
-      let rect = this.$refs.progressBar.getBoundingClientRect();
-      // 点击事件有可能被子元素触发，那时offsetX就是相对于子元素了，所以不能用。
-      this.percent = (x - rect.x) / rect.width;
+    unmountList() {
+      this.timeout = setTimeout(() => (this.callPlayList = false), 3000);
     },
-    dragSet(e) {
-      if (!this.audio) return;
-      e.preventDefault();
-      let playing;
-      if (e.type === "touchstart" || e.type === "mousedown") {
-        playing = !this.audio.paused;
-      } else if (e.type === "touchend") {
-        this.onOff(0, playing);
-      } else if (e.type === "touchmove") {
-        this.onOff(0, false);
-        this.setPercent(e.touches[0].clientX);
+    mountList() {
+      if (this.timeout) {
+        clearTimeout(this.timeout);
+        this.timeout = null;
       }
-      if (!(e instanceof MouseEvent)) return;
-      let mousemove = document.onmousemove,
-        mouseup = document.onmouseup;
-      document.onmousemove = (me) => {
-        me.preventDefault();
-        this.onOff(0, false);
-        this.setPercent(me.clientX);
-      };
-      document.onmouseup = (ue) => {
-        ue.preventDefault;
-        this.onOff(0, playing);
-        document.onmousemove = mousemove;
-        document.onmouseup = mouseup;
-      };
+      this.callPlayList = true;
     },
   },
-  watch: {
-    percent() {
-      this.$refs.progress.style.width = this.percent + "%";
-    },
+  components: {
+    PlayList,
+    ProgressSlider,
+  },
+  beforeUnmount() {
+    clearTimeout(this.timeout);
   },
 };
 </script>
 
-<style lang="scss">
-.progress-wrapper {
+<style lang="scss" scoped>
+.container {
+  position: fixed;
+  display: flex;
+  justify-content: space-between;
+  bottom: 0;
+  width: 100%;
+  /* height: 3rem; */
+  z-index: 99;
+  @extend .cell-transparent;
+}
+.song {
+  display: flex;
+  color: gray;
+  align-items: center;
+  padding-left: 1rem;
+  width: 40%;
+  overflow: hidden;
+}
+.controlls {
+  display: flex;
+}
+.mode {
   display: flex;
   align-items: center;
-  width: 95%;
-  margin: 0px auto;
-  padding: 10px 0;
-  .progress-bar-wrapper {
-    flex: 1;
-    margin: 0 10px;
-    .progress-bar {
-      height: 30px;
-      cursor: v-bind(cursor);
-      .bar-inner {
-        position: relative;
-        top: 50%;
-        height: 4px;
-        z-index: 1;
-        transform: translate(0, -50%);
-        background: rgba(238, 229, 255, 1);
-        .progress {
-          position: absolute;
-          height: 100%;
-          background-color: #bc99ff;
-          .progress-btn {
-            position: absolute;
-            top: 50%;
-            right: 0;
-            transform: translate(50%, -50%);
-            box-sizing: border-box;
-            width: 16px;
-            height: 16px;
-            border: 3px solid #fff;
-            border-radius: 50%;
-            background: #bc99ff;
-          }
-        }
-      }
-    }
+  justify-content: flex-end;
+  padding-right: 1rem;
+  width: 40%;
+}
+.mode * + * {
+  margin-left: 10px;
+}
+.time {
+  margin-right: 1rem;
+  color: gray;
+  user-select: none;
+}
+@media (max-width: 35em) {
+  .song,
+  .mode {
+    display: none;
+  }
+  .container {
+    justify-content: center;
+  }
+}
+.fa-circle-play,
+.fa-circle-pause {
+  display: block;
+  color: red;
+  height: 50px;
+  margin: 5px 20px;
+  cursor: pointer;
+}
+.fa-backward-step,
+.fa-forward-step {
+  display: block;
+  color: red;
+  height: 25px;
+  margin: auto;
+  cursor: pointer;
+}
+.volume {
+  width: 100px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  .icon {
+    width: 15px;
+    cursor: pointer;
+  }
+  .progress {
+    width: 80%;
+    flex-grow: 1;
   }
 }
 </style>

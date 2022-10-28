@@ -2,14 +2,18 @@
   <div>
     <div>
       <button @click="offsetTime -= 0.5">放慢0.5s</button>
-      <span>{{ offsetTime }}</span>
       <button @click="offsetTime += 0.5">加快0.5s</button>
+      <span>{{ offsetTime }}</span>
+      <button @click="resetLrc()">重置歌词</button>
+      <input type="text" v-model="fillLrc" @change="resetLrc(fillLrc)" />
     </div>
     <div class="scroller" ref="scroller">
       <div class="plate">
         <div
           @mouseenter="playing = false"
           @mouseleave="playing = true"
+          @touchstart="playing = false"
+          @touchend="playing = true"
           v-for="(row, index) of lrcRows.rows"
           :class="rowClass(index)"
           @click="setIndex(index), (playing = true)"
@@ -29,14 +33,14 @@ import useLyricStore from "../store/lyric";
 export default {
   name: "LyricFall",
   data() {
-    return { playing: true };
+    return { playing: true, fillLrc: "" };
   },
   computed: {
     ...mapState(useLyricStore, ["lrcRows", "nowIndex", "nowSentence"]),
     ...mapWritableState(useLyricStore, ["offsetTime"]),
   },
   methods: {
-    ...mapActions(useLyricStore, ["setIndex"]),
+    ...mapActions(useLyricStore, ["setIndex", "resetLrc"]),
     rowClass(index) {
       return ["row", index == this.nowIndex ? "now" : ""];
     },
@@ -44,7 +48,7 @@ export default {
   watch: {
     nowIndex() {
       this.$nextTick(() => {
-        let now = document.querySelector(".now"); // index 更新时 .now 还没更新，放在 nextTick 中才不会获取到旧的now。
+        let now = document.querySelector(".now"); // index 更新时 .now 还没更新，放在 nextTick 中才不会获取到旧的 now。
         if (!now || !this.playing) return;
         // now.scrollIntoView({ behavior: "smooth", block: "center" });  // 不要用 scrollIntoView，因为它会把整个页面都移动。
         this.$refs.scroller.scrollTo({

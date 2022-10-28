@@ -1,0 +1,39 @@
+// @/styles/element/index.scss
+// @use 'element-plus/theme-chalk/src/index.scss';
+
+:root {
+    --el-color-primary: red;
+}
+
+li {
+    list-style: none;
+}
+
+@mixin custom-scrollbar() {
+    &::-webkit-scrollbar {
+        /* 滚动条整体样式 */
+        width: 10px;
+        /*高宽分别对应横竖滚动条的尺寸*/
+        height: 1px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        /*滚动条里面小方块*/
+        border-radius: 10px;
+        box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2);
+        background: #535353;
+    }
+
+    &::-webkit-scrollbar-track {
+        /*滚动条里面轨道*/
+        box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2);
+        border-radius: 10px;
+        background: #ededed;
+    }
+}
+
+.cell-transparent {
+    background-image: radial-gradient(transparent 1px, white 1px); // 线性渐变从中心到周围，渐变区域默认铺满
+    background-size: 4px 4px; // 设定单个背景图片宽高，也就设定了渐变区域范围
+    backdrop-filter: saturate(50%) blur(4px); // 背景图片颜色饱和度降低一半，模糊宽度4px
+}

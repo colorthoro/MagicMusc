@@ -4,8 +4,8 @@
       <div
         class="progress-bar"
         ref="progressBar"
-        @mouseenter="if (!disabled) showProgressBtn = true;"
-        @mouseleave="if (!disabled) showProgressBtn = false;"
+        @mouseenter="onBar = true"
+        @mouseleave="onBar = false"
         @click="this.setX($event.clientX)"
       >
         <div class="bar-inner">
@@ -30,8 +30,10 @@ import { isMobile } from "../tools/others";
 export default {
   data() {
     return {
-      remain: undefined,
-      showProgressBtn: isMobile(),
+      remainPlayState: undefined,
+      onBar: false,
+      dragEffect: false,
+      timeOut: null,
     };
   },
   props: {
@@ -76,6 +78,9 @@ export default {
         if (update !== this.modelValue) this.$emit("update:modelValue", update);
       },
     },
+    showProgressBtn() {
+      return isMobile() || this.onBar || this.dragEffect;
+    },
   },
   methods: {
     setX(x) {
@@ -87,9 +92,9 @@ export default {
       if (this.disabled) return;
       e.preventDefault();
       if (e.type === "touchstart" || e.type === "mousedown") {
-        if (this.beforeDrag) this.remain = this.beforeDrag();
+        if (this.beforeDrag) this.remainPlayState = this.beforeDrag();
       } else if (e.type === "touchend") {
-        if (this.afterDrag) this.afterDrag(this.remain);
+        if (this.afterDrag) this.afterDrag(this.remainPlayState);
       } else if (e.type === "touchmove") {
         if (this.onDrag) this.onDrag();
         this.setX(e.touches[0].clientX);
@@ -97,6 +102,8 @@ export default {
       if (e instanceof MouseEvent) {
         let mousemove = document.onmousemove,
           mouseup = document.onmouseup;
+        this.dragEffect = true;
+        if (this.timeOut) clearTimeout(this.timeOut);
         document.onmousemove = (me) => {
           me.preventDefault();
           if (this.onDrag) this.onDrag();
@@ -104,9 +111,14 @@ export default {
         };
         document.onmouseup = (ue) => {
           ue.preventDefault;
-          if (this.afterDrag) this.afterDrag(this.remain);
+          if (this.afterDrag) this.afterDrag(this.remainPlayState);
           document.onmousemove = mousemove;
           document.onmouseup = mouseup;
+          this.timeOut = setTimeout(() => {
+            this.dragEffect = false;
+            this.timeOut = null;
+            console.log("dragEffect off");
+          }, 3000);
         };
       }
     },
@@ -119,41 +131,39 @@ export default {
 };
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
 .progress-wrapper {
   width: 100%;
-  display: flex;
   align-items: center;
-}
-.progress-bar-wrapper {
-  flex: 1;
-}
-.progress-bar {
-  height: 30px;
-  cursor: v-bind(cursor);
-}
-.bar-inner {
-  position: relative;
-  top: 50%;
-  height: 4px;
-  transform: translate(0, -50%);
-  background: rgba(238, 229, 255, 1);
-}
-.progress {
-  position: absolute;
-  height: 100%;
-  background-color: #bc99ff;
-}
-.progress-btn {
-  position: absolute;
-  top: 50%;
-  right: 0;
-  transform: translate(50%, -50%);
-  box-sizing: border-box;
-  width: 16px;
-  height: 16px;
-  border: 3px solid #fff;
-  border-radius: 50%;
-  background: #bc99ff;
+  .progress-bar-wrapper {
+    .progress-bar {
+      height: 15px;
+      cursor: v-bind(cursor);
+      .bar-inner {
+        position: relative;
+        top: 50%;
+        height: 2px;
+        transform: translate(0, -50%);
+        background: rgba(0, 0, 0, 0.1);
+        .progress {
+          position: absolute;
+          height: 100%;
+          background-color: red;
+          .progress-btn {
+            position: absolute;
+            top: 50%;
+            right: 0;
+            transform: translate(50%, -50%);
+            box-sizing: border-box;
+            width: 16px;
+            height: 16px;
+            border: 3px solid white;
+            border-radius: 50%;
+            background: red;
+          }
+        }
+      }
+    }
+  }
 }
 </style>

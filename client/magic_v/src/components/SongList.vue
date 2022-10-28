@@ -1,70 +1,124 @@
 <template>
-  <div>
-    <div class="container">
-      <button class="control" @click="getAllSongsFromCloud">
-        点我获取全部云音乐
-      </button>
-      <button @click="play([...allSongs.values()])">播放全部</button>
-      <div class="all">
-        <div class="song" v-for="song of allSongs.values()" :key="song.file_id">
-          {{ song.name }}
-          <button
-            @click="delFromList({ id: song.file_id, listName: 'allSongs' })"
-          >
-            删除
-          </button>
-          <button @click="song.fetch()">获取</button>
-          <button @click="play(song)">播放</button>
-          <button @click="addNextPlay(song)">添加到下一首</button>
-          <button @click="addQueuePlay(song)">添加到队列尾</button>
+  <el-tabs
+    class="songlists"
+    stretch
+    type="card"
+    addable
+    v-model="activeTabName"
+    @tab-remove="removeTab"
+    @tab-add="toAddNewList"
+  >
+    <el-tab-pane
+      v-for="list of allLists"
+      :key="list"
+      :label="isInnerList(list) || list"
+      :name="list"
+      :closable="!isInnerList(list)"
+    >
+    </el-tab-pane>
+    <el-tab-pane v-if="addingNewList" :name="addingNewListTempTabName">
+      <template #label>
+        <div @mouseover="clickInput">
+          <InputBtn
+            ref="listNameInput"
+            text="输入歌单名"
+            @res="finishAddNewList"
+            style="width: 5em"
+          ></InputBtn>
         </div>
-      </div>
-      <div class="bin">
-        以下是回收站文件
-        <div class="song" v-for="song of binSongs.values()" :key="song.file_id">
-          {{ song.name }}
-          <button
-            @click="delFromList({ id: song.file_id, listName: 'binSongs' })"
-          >
-            删除
-          </button>
-        </div>
-      </div>
-      <button class="control" @click="clearList({ listName: 'binSongs' })">
-        点我删除回收站全部音乐
-      </button>
-    </div>
-  </div>
+      </template>
+    </el-tab-pane>
+  </el-tabs>
 </template>
 
 <script>
+import { onMounted, onBeforeUnmount } from "vue";
 import { mapState, mapActions } from "pinia";
 import useSongListsStore from "../store/songLists";
 import usePlayingQStore from "../store/playingQ";
+import InputBtn from "../base/InputBtn.vue";
+import SongItem from "../base/SongItem.vue";
 
 export default {
   name: "SongList",
   data() {
-    return {};
+    return {
+      addingNewList: false,
+      addingNewListTempTabName: "temp-asdfjkadnv",
+      activeTabName: "allSongs",
+      lastTabName: "allSongs",
+      maxLen: 1,
+    };
   },
-  components: {},
+  components: { InputBtn, SongItem },
   computed: {
-    ...mapState(useSongListsStore, ["allSongs", "binSongs"]),
+    ...mapState(useSongListsStore, ["allLists", "targetList"]),
+    nowList() {
+      if (this.activeTabName === this.addingNewListTempTabName)
+        return this.targetList(this.lastTabName);
+      this.targetList(this.activeTabName);
+    },
   },
   methods: {
     ...mapActions(useSongListsStore, [
       "delFromList",
       "clearList",
       "getAllSongsFromCloud",
+      "addNewList",
+      "delList",
+      "isInnerList",
     ]),
     ...mapActions(usePlayingQStore, ["play", "addNextPlay", "addQueuePlay"]),
+    removeTab(name) {
+      let i = this.allLists.indexOf(name);
+      this.delList(name);
+      if (this.activeTabName === name)
+        this.activeTabName = this.allLists[i] || this.allLists[i - 1];
+    },
+    toAddNewList() {
+      this.addingNewList = true;
+      setTimeout(() => {
+        this.$refs.listNameInput.click();
+      }, 1000); // 等 el-tabs 模拟滚动相关计算结束再触发点击
+      this.lastTabName = this.activeTabName;
+      this.activeTabName = this.addingNewListTempTabName;
+    },
+    clickInput() {
+      this.$refs.listNameInput.click();
+    },
+    finishAddNewList(name) {
+      this.addNewList(name);
+      this.addingNewList = false;
+      this.activeTabName = name;
+    },
+  },
+  setup() {
+    let clickAddIcon;
+    onMounted(() => {
+      clickAddIcon = (e) => {
+        if (e.ctrlKey && e.altKey && e.code === "KeyN") {
+          document.querySelector(".el-tabs__new-tab").click();
+        }
+      };
+      document.addEventListener("keydown", clickAddIcon, { passive: true });
+    });
+    onBeforeUnmount(() => {
+      document.removeEventListener("keydown", clickAddIcon);
+    });
   },
 };
 </script>
 
-<style scoped>
-.container {
-  height: 10rem;
-  overflow: auto;
+<style lan="scss" scoped>
+.songlists {
+  height: 50vh;
+  width: 20em;
+}
+.songlists :deep(.el-tabs__item.is-disabled) {
+  color: var(--el-text-color-primary);
+  cursor: pointer;
+}
+.songlists :deep(.el-tabs__header) {
+  margin-bottom: 1px;
 }
 </style>

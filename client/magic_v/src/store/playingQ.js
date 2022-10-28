@@ -20,9 +20,9 @@ export default defineStore('playingQ', {
             const songLists = useSongListsStore();
             console.time('sync playingQ');
             for (const srcName of ['allSongs', 'binSongs']) {
-                syncQ(songLists[srcName], ctx.store.$state.playingQ);
-                syncQ(songLists[srcName], ctx.store.$state.history.normal);
-                syncQ(songLists[srcName], ctx.store.$state.history.recur);
+                syncQ(songLists.lists[srcName], ctx.store.$state.playingQ);
+                syncQ(songLists.lists[srcName], ctx.store.$state.history.normal);
+                syncQ(songLists.lists[srcName], ctx.store.$state.history.recur);
             }
             console.timeEnd('sync playingQ');
         }
@@ -34,9 +34,9 @@ export default defineStore('playingQ', {
         playOrders: ['queue', 'one', 'random'],
         nowOrder: 0,
         audio: null,
-        currentTime: 0,
         accurateTime: 0,
         duration: 0,
+        volume: 0,
     }),
     getters: {
         nowToPlay(state) {
@@ -55,11 +55,14 @@ export default defineStore('playingQ', {
                 state.history.normal.slice(0, -1),
                 state.history.recur,
                 this.history.normal.slice(-1)
-            );
+            ).reverse();
         },
         playOrder(state) {
             return state.playOrders[state.nowOrder %= state.playOrders.length];
-        }
+        },
+        currentTime(state) {
+            return parseInt(state.accurateTime);
+        },
     },
     actions: {
         _addToPlaying(songOrSongs, addSongMode = 'rightNow') {
@@ -135,10 +138,15 @@ export default defineStore('playingQ', {
                 else this.next();
             });
             audio.addEventListener('timeupdate', () => {
-                this.currentTime = parseInt(audio.currentTime);
                 this.accurateTime = audio.currentTime;
             });
-            audio.addEventListener('loadedmetadata', () => { this.duration = parseInt(audio.duration); });
+            audio.addEventListener('volumechange', () => {
+                this.volume = audio.volume;
+            })
+            audio.addEventListener('loadedmetadata', () => {
+                this.duration = parseInt(audio.duration);
+                audio.volume = 0.8;
+            });
         },
         async _play(songOrSongs) {
             if (!(this.audio instanceof Audio)) {
@@ -162,6 +170,7 @@ export default defineStore('playingQ', {
             this.audio.play();
         },
         onOff(_, toStart) {  // 忽略在vue模板里直接使用时自动传递的事件对象，方便使用
+            console.log('开关目标：', toStart);
             !(this.audio instanceof Audio) ? this.play() : toStart === undefined ?
                 this.audio.paused ? this.audio.play() : this.audio.pause() :
                 toStart ? this.audio.play() : this.audio.pause();

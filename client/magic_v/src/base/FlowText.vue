@@ -1,13 +1,25 @@
 <template>
-  <div class="outer" @mouseenter.once="setSpeed()">
-    <div class="inner" ref="inner" :content="text">
-      {{ text }}
+  <div
+    class="outer"
+    ref="outer"
+    @mouseenter.once="setSpeed()"
+    @mouseover="go = true"
+    @mouseleave="go = false"
+  >
+    <div :class="{ inner: 1, flow: need && go }" ref="inner" :content="text">
+      <span>{{ text }}</span>
     </div>
   </div>
 </template>
 
 <script>
 export default {
+  data() {
+    return {
+      need: true,
+      go: false,
+    };
+  },
   props: {
     text: {
       type: [String, Number],
@@ -16,14 +28,19 @@ export default {
   },
   methods: {
     setSpeed() {
-      this.$refs.inner.style.animationDuration =
-        (this.$refs.inner.offsetWidth / 80).toFixed(2) + "s";
+      let ow = this.$refs.outer.offsetWidth,
+        inner = this.$refs.inner,
+        iw = inner.childNodes[0].offsetWidth;
+      inner.style.animationDuration =
+        iw > ow
+          ? (inner.offsetWidth / 80).toFixed(2) + "s"
+          : (this.need = false);
     },
   },
 };
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
 .outer {
   overflow: hidden;
   white-space: nowrap;
@@ -31,16 +48,23 @@ export default {
 .inner {
   display: inline-block; /* 否则末尾总有一个margin去不掉 */
   position: relative;
-  width: fit-content;
+  width: 100%;
+  span {
+    display: inline-block; // 否则无法设定宽度
+    width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 }
-.outer:hover .inner::after {
+.flow::after {
   content: attr(content);
   position: absolute;
   left: 100%;
 }
-.outer:hover .inner {
+.flow {
+  width: fit-content;
   padding-right: 50%;
-  animation: scroll-x 5s linear infinite;
+  animation: scroll-x linear infinite;
 }
 @keyframes scroll-x {
   0% {
