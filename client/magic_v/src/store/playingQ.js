@@ -2,6 +2,7 @@ import { defineStore } from "pinia";
 import { Song } from "../tools/songsCache";
 import useSongListsStore from "../store/songLists";
 
+// 播放队列的歌曲一开始是从localStorage新建的对象，需要与SongLists中的对象保持同步。
 function syncQ(src, target) {
     for (let i = 0; i < target.length; i++) {
         if (!src.has(target[i].file_id)) continue;
