@@ -36,9 +36,9 @@ const useSongListsStore = defineStore('songLists', {
                 if (!targetList.has(song.file_id)) {
                     song = new Song(song);
                     if (!song.valid) return;
-                    if (listName !== 'allSongs' && !this.allSongs.has(song.file_id))
-                        this.allSongs.set(song.file_id, song);
-                    listName !== 'binSongs' && this.binSongs.delete(song.file_id);
+                    if (listName !== 'allSongs' && !this.lists.allSongs.has(song.file_id))
+                        this.lists.allSongs.set(song.file_id, song);
+                    listName !== 'binSongs' && this.lists.binSongs.delete(song.file_id);
                     targetList.set(song.file_id, song);
                 }
             });
@@ -58,8 +58,8 @@ const useSongListsStore = defineStore('songLists', {
                 console.error(`no song with this id(${id}) in the list(${listName})`);
                 return false;
             }
-            if (targetList !== this.binSongs) {
-                this.binSongs.set(id, targetList.get(id));
+            if (targetList !== this.lists.binSongs) {
+                this.lists.binSongs.set(id, targetList.get(id));
             } else {
                 let confirm = window.confirm(`确认删除《 ${targetList.get(id).name} 》吗？`);
                 if (!confirm) return false;

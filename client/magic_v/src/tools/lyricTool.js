@@ -30,7 +30,7 @@ async function findAllResultSongs(keys) {
         let key = i === -1 ? keys.join("+") : keys[i];
         console.log(`选取文件名中的第${i}个关键词(${key})作为歌名搜索中...`);
         let res = (await apiSuggestSongsInfo(key)).data;
-        if (res.code !== 200 || !res.result.songs) continue;
+        if (res.code !== 200 || !res.result?.songs) continue;
         console.log(res.result.songs);
         let partlyBest = findBestMatch(
             res.result.songs,
@@ -44,6 +44,7 @@ async function findAllResultSongs(keys) {
     return { best, resultSongs };
 }
 export async function queryLyric(song) {
+    console.log('准备调用接口查询')
     let keys = splitSongName(song.name);
     let { best, resultSongs } = await findAllResultSongs(keys);
     let bestMatch = resultSongs[best];

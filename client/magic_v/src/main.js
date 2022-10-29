@@ -63,4 +63,7 @@ app.component('font-awesome-icon', FontAwesomeIcon)
     .component('font-awesome-layers', FontAwesomeLayers)
     .component('font-awesome-layers-text', FontAwesomeLayersText);
 
+import LoadingAcc from './base/LoadingAcc.vue';
+app.component('loading-acc', LoadingAcc);
+
 app.mount('#app');

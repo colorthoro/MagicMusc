@@ -37,6 +37,9 @@ export default defineStore('playingQ', {
         accurateTime: 0,
         duration: 0,
         volume: 0,
+        fetching: 0,
+        lastFetching: null,
+        failed: false,
     }),
     getters: {
         nowToPlay(state) {
@@ -160,14 +163,32 @@ export default defineStore('playingQ', {
             songOrSongs && this._addToPlaying(songOrSongs);
             let targetSong = this.nowToPlay;
             if (!targetSong) { console.error('请先选择歌曲吧！'); return; }
+            if (this.fetching && this.lastFetching === targetSong) {
+                console.log('Fetching the song, please wait...');
+                return;
+            }
             console.log('准备获取', targetSong);
-            let blob = await targetSong.fetch();
-            console.log('即将开始播放', blob);
-            this._recordPlayed(targetSong);
-            let url = URL.createObjectURL(blob);
-            this.audio.src = url;
-            this.audio.controls = true;
-            this.audio.play();
+            let _playId = ++this.fetching;
+            let blob;
+            try {
+                this.lastFetching = targetSong;
+                blob = await targetSong.fetch();
+            } catch (e) {
+                console.error(e);
+                this.failed = true;
+                return;
+            }
+            if (this.fetching === _playId) {
+                this.fetching = 0;
+                console.log(_playId, ' 即将开始播放 ', blob);
+                this._recordPlayed(targetSong);
+                let url = URL.createObjectURL(blob);
+                this.audio.src = url;
+                this.audio.controls = true;
+                this.audio.play();
+            } else {
+                console.log(_playId, ' 播放被抢占，错过歌曲：', targetSong);
+            }
         },
         onOff(_, toStart) {  // 忽略在vue模板里直接使用时自动传递的事件对象，方便使用
             console.log('开关目标：', toStart);

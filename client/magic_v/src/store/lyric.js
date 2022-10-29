@@ -10,11 +10,16 @@ const useLyricStore = defineStore("lyric", {
     getters: {
         ...mapState(usePlayingQStore, ["recent", "accurateTime", "audio"]),
         lrcRows() {
-            if (!this.audio || !this.recent || (
-                !this.recent.lyric.length
-                && !queryLyricFromYun(this.recent)
-                && !queryLyric(this.recent)
-            )) return { rows: [], timePoint: [] };
+            if (!this.audio || !this.recent) {
+                return { rows: [], timePoint: [] };
+            } else if (!this.recent.lyric.length) {
+                queryLyricFromYun(this.recent).then(
+                    ok => !ok && queryLyric(this.recent),
+                    () => queryLyric(this.recent)
+                );
+                return { rows: [], timePoint: [] };
+            }
+
             let lrc = this.recent.lyric;
             let it = lrc.matchAll(
                 /(\[(?<min>\d+):(?<sec>\d+(\.\d+){0,1})\])(?<content>[^[]*)/g

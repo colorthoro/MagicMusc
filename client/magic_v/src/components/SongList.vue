@@ -29,6 +29,10 @@
       </template>
     </el-tab-pane>
   </el-tabs>
+  <button v-if="activeTabName === 'allSongs'" @click="getAllSongsFromCloud">
+    扫描云端
+  </button>
+  <button @click="play([...nowList.values()])">播放当前歌单全部</button>
 </template>
 
 <script>
@@ -37,7 +41,7 @@ import { mapState, mapActions } from "pinia";
 import useSongListsStore from "../store/songLists";
 import usePlayingQStore from "../store/playingQ";
 import InputBtn from "../base/InputBtn.vue";
-import SongItem from "../base/SongItem.vue";
+// import SongItem from "../base/SongItem.vue";
 
 export default {
   name: "SongList",
@@ -50,13 +54,13 @@ export default {
       maxLen: 1,
     };
   },
-  components: { InputBtn, SongItem },
+  components: { InputBtn },
   computed: {
     ...mapState(useSongListsStore, ["allLists", "targetList"]),
     nowList() {
       if (this.activeTabName === this.addingNewListTempTabName)
         return this.targetList(this.lastTabName);
-      this.targetList(this.activeTabName);
+      return this.targetList(this.activeTabName);
     },
   },
   methods: {

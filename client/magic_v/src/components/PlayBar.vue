@@ -6,18 +6,35 @@
         @click="last"
         icon="fa-solid fa-backward-step"
       ></font-awesome-icon>
-      <font-awesome-icon
-        @click="onOff"
-        v-if="!this.audio || this.audio.paused"
-        icon="fa-solid fa-circle-play"
-        style="background-color: white; border-radius: 50%"
-      />
-      <font-awesome-icon
-        @click="onOff"
-        v-else
-        icon="fa-solid fa-circle-pause"
-        style="background-color: white; border-radius: 50%"
-      />
+      <div style="position: relative">
+        <font-awesome-icon
+          @click="onOff"
+          v-if="!this.audio || this.audio.paused"
+          icon="fa-solid fa-circle-play"
+          :style="{ color: fetching ? '#cfa3a3' : 'red' }"
+          style="background-color: white; border-radius: 50%"
+        />
+        <font-awesome-icon
+          @click="onOff"
+          v-else
+          icon="fa-solid fa-circle-pause"
+          :style="{ color: fetching ? '#cfa3a3' : 'red' }"
+          style="background-color: white; border-radius: 50%"
+        />
+        <loading-acc
+          v-if="fetching"
+          stroke="red"
+          style="
+            display: block;
+            height: 40px;
+            width: 40px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+          "
+        ></loading-acc>
+      </div>
       <font-awesome-icon
         @click="next"
         icon="fa-solid fa-forward-step"
@@ -46,7 +63,7 @@
             v-else-if="volumeControll === 0"
           />
         </div>
-        <div class="progress">
+        <div class="volume-percent">
           <ProgressSlider
             :disabled="!audio"
             :max="100"
@@ -70,7 +87,7 @@
       </div>
       <el-popover
         placement="top"
-        width="18em"
+        width="30vw"
         trigger="click"
         :hide-after="0"
         transition="el-zoom-in-bottom"
@@ -91,7 +108,7 @@
     <!-- 进度条 -->
     <ProgressSlider
       style="position: absolute; top: 0; transform: translate(0, -50%)"
-      :disabled="!audio"
+      :disabled="!audio || !!fetching"
       :max="duration - 1"
       :beforeDrag="() => !audio.paused"
       :onDrag="() => onOff(0, false)"
@@ -134,6 +151,7 @@ export default {
       "currentTime",
       "duration",
       "volume",
+      "fetching",
     ]),
     ...mapState(useLyricStore, ["nowSentence"]),
     volumeControll: {
@@ -227,15 +245,15 @@ export default {
 .fa-circle-pause {
   display: block;
   color: red;
-  height: 50px;
-  margin: 5px 20px;
+  height: 40px;
+  margin: 10px 30px;
   cursor: pointer;
 }
 .fa-backward-step,
 .fa-forward-step {
   display: block;
   color: red;
-  height: 25px;
+  height: 20px;
   margin: auto;
   cursor: pointer;
 }
@@ -248,7 +266,7 @@ export default {
     width: 15px;
     cursor: pointer;
   }
-  .progress {
+  .volume-percent {
     width: 80%;
     flex-grow: 1;
   }
