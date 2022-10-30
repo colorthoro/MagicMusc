@@ -1,6 +1,7 @@
 <template>
   <!-- <login-or-register /> -->
   <div class="myWindow">
+    <AddTo></AddTo>
     <button @click="test = !test">test</button>
     <song-list v-if="test" />
   </div>
@@ -15,6 +16,7 @@ import LoginOrRegister from "./components/loginOrRegister";
 import SongList from "./components/SongList";
 import LyricFall from "./components/LyricFall";
 const PlayBar = defineAsyncComponent(() => import("./components/PlayBar"));
+const AddTo = defineAsyncComponent(() => import("./components/AddTo"));
 
 export default {
   name: "App",
@@ -29,6 +31,7 @@ export default {
     LoginOrRegister,
     PlayBar,
     LyricFall,
+    AddTo,
   },
 };
 </script>
@@ -51,20 +54,5 @@ export default {
 }
 .hide-scrollbar::-webkit-scrollbar {
   display: none;
-}
-.del {
-  flex: 1 1 20px;
-  overflow: hidden;
-  white-space: nowrap;
-  text-indent: 10em;
-  position: relative;
-}
-.del::before {
-  text-indent: 0;
-  position: absolute;
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  content: "\00D7";
 }
 </style>

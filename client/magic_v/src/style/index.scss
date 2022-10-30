@@ -3,10 +3,41 @@
 
 :root {
     --el-color-primary: red;
+    --el-color-primary-light-3: #f89898;
+    --el-color-primary-light-5: #fab6b6;
+    --el-color-primary-light-6: #fcd3d3;
+    --el-color-primary-light-7: #fde2e2;
+    --el-color-primary-light-8: #fde2e2;
+    --el-color-primary-light-9: #fef0f0;
+    --el-color-primary-dark-2: #c45656;
 }
 
 li {
     list-style: none;
+}
+
+.red-hover {
+    &:hover {
+        color: red;
+    }
+}
+
+
+.simple-del {
+    flex: 1 1 20px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-indent: 10em;
+    position: relative;
+
+    &::before {
+        text-indent: 0;
+        position: absolute;
+        top: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        content: "\00D7";
+    }
 }
 
 @mixin custom-scrollbar() {

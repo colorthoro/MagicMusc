@@ -49,15 +49,19 @@ import {
     faBackwardStep, faForwardStep,
     faRepeat, fa1, faShuffle,
     faVolumeXmark, faVolumeOff, faVolumeLow, faVolumeHigh,
-    faBars
+    faBars, faPlus, faTrashArrowUp
 } from '@fortawesome/free-solid-svg-icons'
+import {
+    faHeart, faCircleXmark
+} from '@fortawesome/free-regular-svg-icons'
 
 library.add(
     faCirclePlay, faCirclePause,
     faBackwardStep, faForwardStep,
     faRepeat, fa1, faShuffle,
     faVolumeXmark, faVolumeOff, faVolumeLow, faVolumeHigh,
-    faBars
+    faBars, faHeart, faCircleXmark,
+    faPlus, faTrashArrowUp
 );
 app.component('font-awesome-icon', FontAwesomeIcon)
     .component('font-awesome-layers', FontAwesomeLayers)

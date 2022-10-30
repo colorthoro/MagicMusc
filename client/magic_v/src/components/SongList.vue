@@ -22,6 +22,7 @@
           <InputBtn
             ref="listNameInput"
             text="输入歌单名"
+            :validator="null"
             @res="finishAddNewList"
             style="width: 5em"
           ></InputBtn>
@@ -56,7 +57,7 @@ export default {
   },
   components: { InputBtn },
   computed: {
-    ...mapState(useSongListsStore, ["allLists", "targetList"]),
+    ...mapState(useSongListsStore, ["allLists", "targetList", "isInnerList"]),
     nowList() {
       if (this.activeTabName === this.addingNewListTempTabName)
         return this.targetList(this.lastTabName);
@@ -70,7 +71,6 @@ export default {
       "getAllSongsFromCloud",
       "addNewList",
       "delList",
-      "isInnerList",
     ]),
     ...mapActions(usePlayingQStore, ["play", "addNextPlay", "addQueuePlay"]),
     removeTab(name) {
@@ -80,19 +80,21 @@ export default {
         this.activeTabName = this.allLists[i] || this.allLists[i - 1];
     },
     toAddNewList() {
-      this.addingNewList = true;
-      setTimeout(() => {
-        this.$refs.listNameInput.click();
-      }, 1000); // 等 el-tabs 模拟滚动相关计算结束再触发点击
+      !this.addingNewList && (this.addingNewList = true);
       this.lastTabName = this.activeTabName;
       this.activeTabName = this.addingNewListTempTabName;
+      setTimeout(() => {
+        this.$refs.listNameInput.click();
+      }, 1000); // 等 el-tabs 模拟滚动结束再触发点击
     },
     clickInput() {
       this.$refs.listNameInput.click();
     },
     finishAddNewList(name) {
-      this.addNewList(name);
       this.addingNewList = false;
+      this.activeTabName = this.lastTabName;
+      if (!name.length) return;
+      this.addNewList(name);
       this.activeTabName = name;
     },
   },
