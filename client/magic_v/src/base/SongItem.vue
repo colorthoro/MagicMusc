@@ -41,7 +41,6 @@ import FlowText from "./FlowText.vue";
 import { mapActions, mapState } from "pinia";
 import usePlayingQStore from "../store/playingQ";
 import useSongListsStore from "../store/songLists";
-import useBackStore from "../store/back";
 import { Song } from "../tools/songsCache";
 export default {
   props: {
@@ -76,8 +75,7 @@ export default {
     },
   },
   computed: {
-    ...mapState(useSongListsStore, ["targetList"]),
-    ...mapState(useBackStore, ["modifyDialog"]),
+    ...mapState(useSongListsStore, ["targetList", "modifyDialog"]),
     isLiked() {
       return this.targetList("liked").get(this.song.file_id);
     },

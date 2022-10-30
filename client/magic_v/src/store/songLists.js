@@ -15,6 +15,10 @@ const useSongListsStore = defineStore('songLists', {
         innerLists: {
             allSongs: '全部', liked: "收藏", binSongs: '回收站'
         },
+        modifyDialog: {
+            need: false,  // 作为 AddTo.vue 的输入
+            targetSongs: [],
+        }
     }),
     getters: {
         allLists() {
@@ -27,7 +31,7 @@ const useSongListsStore = defineStore('songLists', {
         targetList: (state) => (listName) => {
             let res = state.lists[listName];
             if (!res) console.error('list not found:' + listName);
-            else console.info('list founded: ' + listName);
+            // else console.info('list founded: ' + listName);
             return res || [];
         },
         isInnerList: (state) => (listName) => state.innerLists[listName],
@@ -99,7 +103,7 @@ const useSongListsStore = defineStore('songLists', {
             console.log('delList', listName);
             (listName in this.$state.lists) && delete this.$state.lists[listName];
         },
-        syncTags(songs, newTags, needCut = false) {
+        async syncTags(songs, newTags, needCut = false) {
             songs.forEach(song => {
                 console.log('syncing', song.name, newTags);
                 let added = newTags.filter(tag => song.tags.indexOf(tag) === -1);

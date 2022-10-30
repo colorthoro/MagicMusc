@@ -76,7 +76,7 @@ export default {
   mounted() {
     let i = 0;
     this.interval = setInterval(() => {
-      console.log("interval");
+      // console.log("interval");
       i = !i;
       !(
         (i && this.maxLenQ < this.playingQ.length && this.maxLenQ++) ||

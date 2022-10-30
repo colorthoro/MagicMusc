@@ -42,7 +42,6 @@
 
 <script>
 import useSongListsStore from "../store/songLists";
-import useBackStore from "../store/back";
 import { mapState, mapActions } from "pinia";
 export default {
   data() {
@@ -52,8 +51,11 @@ export default {
     };
   },
   computed: {
-    ...mapState(useSongListsStore, ["addableLists", "isInnerList"]),
-    ...mapState(useBackStore, ["modifyDialog"]),
+    ...mapState(useSongListsStore, [
+      "addableLists",
+      "isInnerList",
+      "modifyDialog",
+    ]),
     visible: {
       get() {
         return this.modifyDialog.need;
@@ -65,14 +67,14 @@ export default {
   },
   methods: {
     ...mapActions(useSongListsStore, ["syncTags"]),
-    confirm() {
-      //   this.moving = true;
-      this.syncTags(
+    async confirm() {
+      this.moving = true;
+      await this.syncTags(
         this.modifyDialog.targetSongs,
         this.checkedList,
         this.modifyDialog.targetSongs.length === 1
       );
-      //   this.moving = false;
+      this.moving = false;
       this.visible = false;
       this.modifyDialog.targetSongs.length = 0;
     },
