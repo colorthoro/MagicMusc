@@ -16,31 +16,41 @@
       </span>
     </div>
     <div class="list" v-show="listOrHistory === 1">
-      <el-scrollbar :always="showScrollBar">
-        <li
-          v-for="(song, index) of playingQ"
-          :key="song.file_id"
-          :class="{ active: audio && song.sameWith(recent) }"
-        >
-          <SongItem v-if="index < maxLenQ" :song="song" :del="del" />
-        </li>
-      </el-scrollbar>
+      <el-auto-resizer>
+        <template #default="{ height }">
+          <VirtualList
+            :height="height"
+            :list="playingQ.map((v) => ({ id: v.file_id, data: v }))"
+          >
+            <template #default="{ item: song }">
+              <SongItem
+                :song="song"
+                :del="del"
+                :class="{ active: audio && song.sameWith(recent) }"
+              />
+            </template>
+          </VirtualList>
+        </template>
+      </el-auto-resizer>
     </div>
     <div class="list" v-show="listOrHistory === 2">
-      <el-scrollbar>
-        <li
-          v-for="(hi, index) of historyList"
-          :key="hi.file_id"
-          :class="{ active: audio && hi.sameWith(recent) }"
-        >
-          <SongItem
-            v-if="index < maxLenH"
-            :song="hi"
-            :showCnt="true"
-            :delAble="false"
-          ></SongItem>
-        </li>
-      </el-scrollbar>
+      <el-auto-resizer>
+        <template #default="{ height }">
+          <VirtualList
+            :height="height"
+            :list="historyList.map((v) => ({ id: v.file_id, data: v }))"
+          >
+            <template #default="{ item: song }">
+              <SongItem
+                :song="song"
+                :showCnt="true"
+                :delAble="false"
+                :class="{ active: audio && song.sameWith(recent) }"
+              />
+            </template>
+          </VirtualList>
+        </template>
+      </el-auto-resizer>
     </div>
   </div>
 </template>
@@ -49,53 +59,28 @@
 import { mapState, mapActions } from "pinia";
 import usePlayingQStore from "../store/playingQ";
 import SongItem from "../base/SongItem";
+import VirtualList from "../base/VirtualList.vue";
 export default {
   data() {
     return {
       listOrHistory: 1,
-      showScrollBar: true,
-      timeout: null,
-      maxLenQ: 1,
-      maxLenH: 1,
-      interval: null,
     };
   },
   computed: {
     ...mapState(usePlayingQStore, [
       "audio",
-      "history",
       "historyList",
       "playingQ",
       "recent",
     ]),
   },
   methods: { ...mapActions(usePlayingQStore, ["del"]) },
-  components: {
-    SongItem,
-  },
-  mounted() {
-    let i = 0;
-    this.interval = setInterval(() => {
-      // console.log("interval");
-      i = !i;
-      !(
-        (i && this.maxLenQ < this.playingQ.length && this.maxLenQ++) ||
-        (this.maxLenH < this.historyList.length && this.maxLenH++) ||
-        (this.maxLenQ < this.playingQ.length && this.maxLenQ++)
-      ) && clearInterval(this.interval);
-    }, 10);
-    this.timeout = setTimeout(() => (this.showScrollBar = false), 1500);
-  },
-  beforeUnmount() {
-    clearInterval(this.interval);
-    console.log("bye playlist");
-  },
+  components: { SongItem, VirtualList },
 };
 </script>
 
 <style lang="scss" scoped>
 .play-list-container {
-  // color: gray;
   display: flex;
   flex-direction: column;
   justify-content: space-between;

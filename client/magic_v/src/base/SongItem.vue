@@ -1,8 +1,7 @@
 <template>
-  <div class="item" @click.stop="playAble && play(song)">
+  <div class="song-item" @click.stop="playAble && play(song)">
     <FlowText class="name" :text="song.name"></FlowText>
     <FlowText class="author" :text="song.author" v-if="showAuthor"></FlowText>
-    <FlowText class="cnt" :text="song.cnt" v-if="showCnt"></FlowText>
     <font-awesome-icon
       v-if="resotrable"
       class="addons red-hover"
@@ -16,7 +15,6 @@
       @click.stop="if (del) del(song);"
     />
     <font-awesome-icon
-      v-if="delAble"
       class="addons red-hover"
       icon="fa-solid fa-plus"
       @click.stop="modify"
@@ -32,7 +30,7 @@
       "
       icon="fa-regular fa-heart"
     />
-    <!-- <div v-if="delAble" class="del" @click.stop="if (del) del(song);">删除</div> -->
+    <FlowText class="cnt" :text="song.cnt" v-if="showCnt"></FlowText>
   </div>
 </template>
 
@@ -98,7 +96,7 @@ export default {
 </script>
 
 <style scoped>
-.item {
+.song-item {
   display: flex;
   justify-content: space-between;
 }
@@ -116,15 +114,16 @@ export default {
   flex: 1 1 35%;
 }
 .cnt {
-  flex: 1 1 15%;
+  width: 2em;
+  text-align: center;
 }
 .addons {
   display: none;
   color: gray;
   height: 1em;
-  padding: 0.5em;
+  padding: 0.5em 1em;
 }
-.item:hover .addons {
+.song-item:hover .addons {
   display: inline-block;
 }
 </style>
