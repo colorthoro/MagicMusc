@@ -87,7 +87,7 @@
       </div>
       <el-popover
         placement="top"
-        width="30vw"
+        width="50vw"
         trigger="click"
         :hide-after="0"
         transition="el-zoom-in-bottom"
