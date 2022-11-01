@@ -144,7 +144,7 @@ export default {
         top: 50%;
         height: 2px;
         transform: translate(0, -50%);
-        background: rgba(0, 0, 0, 0.1);
+        background: rgba(0, 0, 0, 0.05);
         .progress {
           position: absolute;
           height: 100%;

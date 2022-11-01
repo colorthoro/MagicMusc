@@ -100,9 +100,7 @@
             <font-awesome-icon icon="fa-solid fa-bars"> </font-awesome-icon>
           </div>
         </template>
-        <!-- <div style="height: 50vh"> -->
-        <PlayList style="height: 50vh" v-if="callPlayList" />
-        <!-- </div> -->
+        <PlayList style="height: 65vh" v-if="callPlayList" />
       </el-popover>
     </div>
     <!-- 进度条 -->
@@ -229,7 +227,7 @@ export default {
 }
 .time {
   margin-right: 1rem;
-  color: gray;
+  color: var(--netease-number-color);
   user-select: none;
 }
 @media (max-width: 35em) {

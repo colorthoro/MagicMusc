@@ -1,5 +1,4 @@
-// @/styles/element/index.scss
-// @use 'element-plus/theme-chalk/src/index.scss';
+/*********************重置 element plus 主题***********************/
 
 :root {
     --el-color-primary: red;
@@ -12,16 +11,51 @@
     --el-color-primary-dark-2: #c45656;
 }
 
+.el-popper.is-customized {
+    /* Set padding to ensure the height is 32px */
+    padding: 6px 12px;
+    background: linear-gradient(90deg, #fcd3d3, #fef0f0);
+}
+
+.el-popper.is-customized .el-popper__arrow::before {
+    background: linear-gradient(45deg, #fcd3d3, #fef0f0);
+    right: 0;
+}
+
+.el-table-v2__row-cell {
+    flex-direction: column;
+    align-items: stretch; // 结合上面让每一行铺满
+    justify-content: center; // 让每一行居中
+}
+
+/********************* 其它 ***********************/
+
+:root {
+    --netease-number-color: rgb(192, 193, 194);
+    --netease-background-color-dark: rgb(250, 250, 250);
+    --netease-red: rgb(236, 75, 75);
+    color: var(--el-text-color-primary);
+    font-size: var(--el-font-size-base);
+}
+
 li {
     list-style: none;
 }
 
 .red-hover {
     &:hover {
-        color: red;
+        color: var(--el-color-primary);
     }
 }
 
+.active-black {
+    font-weight: bold;
+    color: black;
+}
+
+.active-red {
+    color: var(--el-color-primary);
+}
 
 .simple-del {
     flex: 1 1 20px;

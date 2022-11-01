@@ -7,7 +7,7 @@
       >
         播放列表
       </span>
-      |
+      <span style="color: var(--netease-number-color)">|</span>
       <span
         :class="{ 'active-black': listOrHistory === 2 }"
         @click="listOrHistory = 2"
@@ -26,7 +26,7 @@
               <SongItem
                 :song="song"
                 :del="del"
-                :class="{ active: audio && song.sameWith(recent) }"
+                :class="{ 'active-red': audio && song.sameWith(recent) }"
               />
             </template>
           </VirtualList>
@@ -45,7 +45,7 @@
                 :song="song"
                 :showCnt="true"
                 :delAble="false"
-                :class="{ active: audio && song.sameWith(recent) }"
+                :class="{ 'active-red': audio && song.sameWith(recent) }"
               />
             </template>
           </VirtualList>
@@ -87,13 +87,6 @@ export default {
   align-items: center;
   .head {
     margin-bottom: 5px;
-  }
-  .active-black {
-    font-weight: bold;
-    color: black;
-  }
-  .active {
-    color: var(--el-color-primary);
   }
   .list {
     width: 100%;

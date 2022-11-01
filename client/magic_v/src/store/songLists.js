@@ -82,11 +82,14 @@ const useSongListsStore = defineStore('songLists', {
             })
             return k;
         },
-        clearList(listName) {  // TODO 把 tag 也删掉 
+        clearList(listName) {
             let targetList = this.targetList(listName);
             if (!targetList) return false;
             let confirm = window.confirm(`确认清空 ${listName} 吗？`);
             if (!confirm) return false;
+            this.$state.lists[listName].forEach(song => {
+                song.tags = song.tags.filter(tag => tag !== listName);
+            });
             this.$state[listName] = new Map();
             return true;
         },
@@ -100,8 +103,15 @@ const useSongListsStore = defineStore('songLists', {
             console.log(this.$state.lists);
         },
         delList(listName) {
-            console.log('delList', listName);
-            (listName in this.$state.lists) && delete this.$state.lists[listName];
+            let targetList = this.targetList(listName);
+            if (!targetList) return false;
+            let confirm = window.confirm(`确认删除 ${listName} 吗？`);
+            if (!confirm) return false;
+            this.$state.lists[listName].forEach(song => {
+                song.tags = song.tags.filter(tag => tag !== listName);
+            });
+            delete this.$state.lists[listName];
+            return true;
         },
         async syncTags(songs, newTags, needCut = false) {
             songs.forEach(song => {
