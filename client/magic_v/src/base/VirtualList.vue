@@ -14,14 +14,21 @@
         <div
           class="item"
           v-for="(item, index) of listShowing"
-          :key="item.id"
+          :key="item[id_field]"
           :style="{ height: itemHeight + 'px' }"
         >
           <div v-if="showIndex" class="item-index">
             {{ fixedInt(startIndex + index + 1) }}
           </div>
+          <div v-if="needCheck" class="pretty p-icon p-round p-pulse">
+            <input type="checkbox" :value="item" v-model="checkedList" />
+            <div class="state p-primary">
+              <font-awesome-icon class="icon" icon="fa-solid fa-check" />
+              <label></label>
+            </div>
+          </div>
           <div class="item-content">
-            <slot :item="item.data"></slot>
+            <slot :item="item"></slot>
           </div>
         </div>
       </div>
@@ -30,18 +37,22 @@
 </template>
 
 <script>
-import { fixedInt } from "../tools/others";
 export default {
   data() {
     return {
       startIndex: 0, // index of the first showing item
       listTranslateY: 0,
+      checkedList: new Set(),
     };
   },
   props: {
     list: {
       type: Array,
       default: () => [],
+    },
+    id_field: {
+      type: String,
+      default: "id",
     },
     height: {
       type: Number,
@@ -59,7 +70,16 @@ export default {
       type: Boolean,
       default: false,
     },
+    needCheck: {
+      type: Boolean,
+      default: true,
+    },
+    checkStatus: {
+      type: String,
+      default: "origin",
+    },
   },
+  emits: ["update:checkStatus"],
   computed: {
     totalHeight() {
       return this.itemHeight * this.list.length;
@@ -80,7 +100,35 @@ export default {
       let yu = scrollTop - this.startIndex * this.itemHeight;
       this.listTranslateY = scrollTop - yu + "px";
     },
-    fixedInt,
+    popCheckedItems() {
+      let res = Array.from(this.checkedList);
+      this.checkedList.clear();
+      return res;
+    },
+  },
+  watch: {
+    checkStatus: {
+      immediate: true,
+      handler(newV) {
+        console.log("vlist get checkStatus", newV);
+        if (newV === "allChecked") {
+          this.checkedList = new Set(this.list);
+          // FIXME: given vmodel checkedList on the checkbox above and if here is checkedList.add(this.list[i])
+          // then in the checkedList(Set) would exist two similar objs, one of them is the Proxy of another.
+        } else if (newV === "noChecked") {
+          this.checkedList.clear();
+        }
+      },
+    },
+    "checkedList.size": {
+      handler(size) {
+        let msg = "origin";
+        if (size === 0) msg = "noChecked";
+        else if (size === this.list.length) msg = "allChecked";
+        console.log("vlist emit", msg);
+        this.$emit("update:checkStatus", msg);
+      },
+    },
   },
 };
 </script>

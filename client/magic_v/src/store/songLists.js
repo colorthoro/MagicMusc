@@ -15,6 +15,7 @@ const useSongListsStore = defineStore('songLists', {
         innerLists: {
             allSongs: '全部', liked: "收藏", binSongs: '回收站'
         },
+        linkedLists: new Set(['allSongs', 'binSongs']),  // 保证所有歌曲对象源自这两个Map。
         modifyDialog: {
             need: false,  // 作为 AddTo.vue 的输入
             targetSongs: [],
@@ -29,10 +30,17 @@ const useSongListsStore = defineStore('songLists', {
             return this.allLists.filter(list => list !== 'allSongs' && list !== 'binSongs');
         },
         targetList: (state) => (listName) => {
-            let res = state.lists[listName];
-            if (!res) console.error('list not found:' + listName);
-            // else console.info('list founded: ' + listName);
-            return res || [];
+            let target = state.lists[listName];
+            if (!target) console.error('list not found:' + listName);
+            else if (!state.linkedLists.has(listName)) {
+                for (const key of target.keys()) {
+                    if (state.lists.allSongs.has(key)) {
+                        target.set(key, state.lists.allSongs.get(key));
+                    } else state.lists.allSongs.set(key, target.get(key));
+                }
+                state.linkedLists.add(listName);
+            }
+            return target || [];
         },
         isInnerList: (state) => (listName) => state.innerLists[listName],
     },
@@ -43,16 +51,20 @@ const useSongListsStore = defineStore('songLists', {
             let k = 0;
             songs.forEach(song => {
                 if (!targetList.has(song.file_id)) {
-                    song = new Song(song);
-                    if (!song.valid) return;
-                    if (targetList !== this.lists.allSongs) {
-                        song.tags.push(listName);
-                        !this.lists.allSongs.has(song.file_id)
-                            && this.lists.allSongs.set(song.file_id, song);
+                    let newSong = this.lists.allSongs.get(song.file_id) ||
+                        this.lists.binSongs.get(song.file_id);
+                    if (!newSong) {
+                        newSong = new Song(song);
+                        if (!newSong.valid) return;
+                        newSong.tags.push(listName);
+                    } else if (newSong.tags.indexOf(listName) === -1) {
+                        newSong.tags.push(listName);
                     }
-                    console.log('put ', song.name, 'into ', listName);
-                    this.lists.binSongs.delete(song.file_id);
-                    targetList.set(song.file_id, song);
+                    console.log('put ', newSong.name, 'into ', listName);
+                    this.lists.allSongs.set(newSong.file_id, newSong);
+                    if (targetList === this.lists.allSongs) return;
+                    this.lists.binSongs.delete(newSong.file_id);
+                    targetList.set(newSong.file_id, newSong);
                     k++;
                 }
             });
@@ -63,23 +75,18 @@ const useSongListsStore = defineStore('songLists', {
             if (!targetList) return;
             let k = 0;
             songs.forEach(song => {
-                let id = song.file_id;
-                if (!targetList.has(id)) {
-                    console.error(`no song with this id(${id}) in the list(${listName})`);
-                    return;
-                }
+                if (!targetList.has(song.file_id)) return;
                 if (targetList === this.lists.allSongs) {
-                    this.lists.binSongs.set(id, targetList.get(id));
+                    this.lists.binSongs.set(song.file_id, song);
                 } else if (targetList === this.lists.binSongs) {
-                    let confirm = window.confirm(`确认删除《 ${targetList.get(id).name} 》吗？`);
+                    let confirm = window.confirm(`确认删除《 ${song.name} 》吗？`);
                     if (!confirm) return;
-                } else {
-                    song.tags = song.tags.filter(tag => tag !== listName);
                 }
+                song.tags = song.tags.filter(tag => tag !== listName);
                 console.log('del ', song.name, 'from ', listName);
-                targetList.delete(id);
+                targetList.delete(song.file_id);
                 k++;
-            })
+            });
             return k;
         },
         clearList(listName) {
@@ -87,7 +94,7 @@ const useSongListsStore = defineStore('songLists', {
             if (!targetList) return false;
             let confirm = window.confirm(`确认清空 ${listName} 吗？`);
             if (!confirm) return false;
-            this.$state.lists[listName].forEach(song => {
+            targetList.forEach(song => {
                 song.tags = song.tags.filter(tag => tag !== listName);
             });
             this.$state[listName] = new Map();
@@ -107,7 +114,7 @@ const useSongListsStore = defineStore('songLists', {
             if (!targetList) return false;
             let confirm = window.confirm(`确认删除 ${listName} 吗？`);
             if (!confirm) return false;
-            this.$state.lists[listName].forEach(song => {
+            targetList.forEach(song => {
                 song.tags = song.tags.filter(tag => tag !== listName);
             });
             delete this.$state.lists[listName];
@@ -129,7 +136,12 @@ const useSongListsStore = defineStore('songLists', {
                 });
                 console.log('sync tags ok', song.name, song.tags);
             });
-        }
+        },
+        callModifyDialog(songs) {
+            if (!songs.length) return;
+            this.modifyDialog.targetSongs = songs;
+            this.modifyDialog.need = true;
+        },
     }
 });
 

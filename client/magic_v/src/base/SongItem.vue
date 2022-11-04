@@ -2,40 +2,39 @@
   <div class="song-item" @click.stop="playAble && play(song)">
     <FlowText class="name" :text="song.name"></FlowText>
     <FlowText class="author" :text="song.author" v-if="showAuthor"></FlowText>
-    <font-awesome-icon
-      v-if="resotrable"
-      class="addons red-hover"
-      icon="fa-solid fa-trash-arrow-up"
-      @click.stop="putIntoList([song], 'allSongs')"
-    />
-    <font-awesome-icon
-      v-if="delAble"
-      class="addons red-hover"
-      icon="fa-regular fa-circle-xmark"
-      @click.stop="if (del) del(song);"
-    />
-    <font-awesome-icon
-      class="addons red-hover"
-      icon="fa-solid fa-plus"
-      @click.stop="modify"
-    />
-    <font-awesome-icon
-      class="addons red-hover"
-      :style="{
-        color: isLiked ? 'red' : '',
-        display: isLiked ? 'inline-block' : '',
+    <SongItemAddons
+      :config="{
+        trashUp: {
+          need: restorable,
+          func: () => putIntoList([song], 'allSongs'),
+        },
+        del: {
+          need: delAble,
+          func: () => {
+            if (del) del(song);
+          },
+        },
+        plus: { need: true, func: () => callModifyDialog([song]) },
+        heart: {
+          need: true,
+          style: {
+            color: isLiked ? 'red' : '',
+            display: isLiked ? 'inline-block' : '',
+          },
+          func: () =>
+            isLiked
+              ? delFromList([song], 'liked')
+              : putIntoList([song], 'liked'),
+        },
       }"
-      @click.stop="
-        isLiked ? delFromList([song], 'liked') : putIntoList([song], 'liked')
-      "
-      icon="fa-regular fa-heart"
     />
-    <FlowText class="cnt" :text="song.cnt" v-if="showCnt"></FlowText>
+    <FlowText class="cnt" :text="fixedInt(song.cnt)" v-if="showCnt"></FlowText>
   </div>
 </template>
 
 <script>
 import FlowText from "./FlowText.vue";
+import SongItemAddons from "./SongItemAddons.vue";
 import { mapActions, mapState } from "pinia";
 import usePlayingQStore from "../store/playingQ";
 import useSongListsStore from "../store/songLists";
@@ -66,31 +65,32 @@ export default {
       type: Function,
       default: null,
     },
-    resotrable: {
+    restorable: {
       // 显示上只有回收站列表里需要提供还原选项，也就不自行计算了。
       type: Boolean,
       default: false,
     },
   },
   computed: {
-    ...mapState(useSongListsStore, ["targetList", "modifyDialog"]),
+    ...mapState(useSongListsStore, ["targetList"]),
     isLiked() {
       return this.targetList("liked").get(this.song.file_id);
     },
   },
   methods: {
     ...mapActions(usePlayingQStore, ["play"]),
-    ...mapActions(useSongListsStore, ["putIntoList", "delFromList"]),
-    modify() {
-      this.modifyDialog.targetSongs = [this.song];
-      this.modifyDialog.need = true;
-    },
+    ...mapActions(useSongListsStore, [
+      "putIntoList",
+      "delFromList",
+      "callModifyDialog",
+    ]),
   },
   beforeUnmount() {
     console.log("bye songItem");
   },
   components: {
     FlowText,
+    SongItemAddons,
   },
 };
 </script>
@@ -116,14 +116,12 @@ export default {
 .cnt {
   width: 2em;
   text-align: center;
+  color: var(--netease-number-color);
 }
-.addons {
+.song-item :deep(.addons) {
   display: none;
-  color: gray;
-  height: 1em;
-  padding: 0.5em 1em;
 }
-.song-item:hover .addons {
+.song-item:hover :deep(.addons) {
   display: inline-block;
 }
 </style>

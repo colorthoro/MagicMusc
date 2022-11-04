@@ -18,10 +18,7 @@
     <div class="list" v-show="listOrHistory === 1">
       <el-auto-resizer>
         <template #default="{ height }">
-          <VirtualList
-            :height="height"
-            :list="playingQ.map((v) => ({ id: v.file_id, data: v }))"
-          >
+          <VirtualList :height="height" :list="playingQ" id_field="file_id">
             <template #default="{ item: song }">
               <SongItem
                 :song="song"
@@ -36,10 +33,7 @@
     <div class="list" v-show="listOrHistory === 2">
       <el-auto-resizer>
         <template #default="{ height }">
-          <VirtualList
-            :height="height"
-            :list="historyList.map((v) => ({ id: v.file_id, data: v }))"
-          >
+          <VirtualList :height="height" :list="historyList" id_field="file_id">
             <template #default="{ item: song }">
               <SongItem
                 :song="song"
