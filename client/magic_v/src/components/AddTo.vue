@@ -21,7 +21,7 @@
     </el-scrollbar>
     <template #footer>
       <div>
-        <el-scrollbar style="margin-bottom: 20px" max-height="5em">
+        <el-scrollbar style="margin-bottom: 20px" max-height="20vh">
           <li
             class="sipName"
             v-for="song of modifyDialog.targetSongs"
@@ -47,8 +47,8 @@
 </template>
 
 <script>
-import useSongListsStore from "../store/songLists";
 import { mapState, mapActions } from "pinia";
+import useSongListsStore from "../store/songLists";
 export default {
   data() {
     return {

@@ -28,7 +28,37 @@
     justify-content: center; // 让每一行居中
 }
 
+
+/********************* pretty checkbox ***********************/
+
+$pretty--color-primary: red;
+@import "~pretty-checkbox/src/pretty-checkbox.scss";
+
+.pretty {
+    margin: 0;
+}
+
 /********************* 其它 ***********************/
+*,
+*::before,
+*::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+.myWindow {
+    width: 100%;
+    height: v-bind("'calc(100vh - ' + playBarH + ')'");
+    position: absolute;
+    top: 0;
+    left: 0;
+    background: #fff;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+    display: none;
+}
 
 :root {
     --netease-number-color: rgb(192, 193, 194);
@@ -46,6 +76,16 @@ li {
     &:hover {
         color: var(--el-color-primary);
     }
+}
+
+
+.addons {
+    display: inline-block;
+    color: gray;
+    height: 1em;
+    width: 1em;
+    padding: 0.5em 1em;
+    flex-shrink: 0;
 }
 
 .active-black {

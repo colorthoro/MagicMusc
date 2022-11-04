@@ -117,17 +117,19 @@
 </template>
 
 <script>
+import { defineAsyncComponent } from "vue";
 import { mapState, mapWritableState, mapActions } from "pinia";
 import usePlayingQStore from "../store/playingQ";
 import useLyricStore from "../store/lyric";
-import { defineAsyncComponent } from "vue";
-const PlayList = defineAsyncComponent(() => import("./PlayList"));
-const ProgressSlider = defineAsyncComponent(() =>
-  import("../base/ProgressSlider")
-);
+import ProgressSlider from "../base/ProgressSlider.vue";
+const PlayList = defineAsyncComponent(() => import("./PlayList.vue"));
 
 export default {
   name: "PlayBar",
+  components: {
+    PlayList,
+    ProgressSlider,
+  },
   props: {
     height: {
       type: String,
@@ -180,10 +182,6 @@ export default {
       }
       this.callPlayList = true;
     },
-  },
-  components: {
-    PlayList,
-    ProgressSlider,
   },
   beforeUnmount() {
     clearTimeout(this.timeout);

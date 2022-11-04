@@ -1,5 +1,5 @@
-import { apiScanMusic } from '../tools/api';
 import { defineStore } from 'pinia';
+import { apiScanMusic } from '../tools/api';
 import { Song } from '../tools/songsCache'
 
 const useSongListsStore = defineStore('songLists', {
@@ -60,12 +60,12 @@ const useSongListsStore = defineStore('songLists', {
                     } else if (newSong.tags.indexOf(listName) === -1) {
                         newSong.tags.push(listName);
                     }
-                    console.log('put ', newSong.name, 'into ', listName);
+                    console.log('put', newSong.name, 'into', listName);
                     this.lists.allSongs.set(newSong.file_id, newSong);
-                    if (targetList === this.lists.allSongs) return;
                     this.lists.binSongs.delete(newSong.file_id);
-                    targetList.set(newSong.file_id, newSong);
                     k++;
+                    if (targetList === this.lists.allSongs) return;
+                    targetList.set(newSong.file_id, newSong);
                 }
             });
             return k;

@@ -5,19 +5,18 @@
     type="card"
     addable
     v-model="activeTabName"
-    @tab-remove="removeTab"
-    @tab-add="toAddNewList"
+    @tab-remove="tabRemoveHandler"
+    @tab-add="tabAddHandler"
   >
     <el-tab-pane
       v-for="list of allLists"
       :key="list"
-      lazy
       :label="isInnerList(list) || list"
       :name="list"
       :closable="!isInnerList(list)"
     >
       <div style="height: 30vh">
-        <VirtualListHead v-model:checkStatus="test">
+        <VirtualListHead style="height: 2em" v-model:checkStatus="test">
           <SongItemAddons
             :config="{
               trashUp: {
@@ -33,14 +32,17 @@
                 need: true,
                 func: () => callModifyDialog($refs[list][0].popCheckedItems()),
               },
+              more: {
+                need: true,
+              },
               cloudDown: {
                 need: true,
-                func: () => {},
+                func: () => cloudDownFunc(),
               },
             }"
           />
         </VirtualListHead>
-        <el-auto-resizer>
+        <el-auto-resizer style="height: calc(30vh - 2em)">
           <template #default="{ height }">
             <VirtualList
               :height="height"
@@ -52,7 +54,6 @@
               <template #default="{ item: song }">
                 <SongItem
                   :song="song"
-                  :class="{ 'active-red': audio && song.sameWith(recent) }"
                   :del="(song) => delFromList([song], list)"
                   :restorable="list === 'binSongs'"
                 />
@@ -64,12 +65,12 @@
     </el-tab-pane>
     <el-tab-pane v-if="addingNewList" :name="addingNewListTempTabName">
       <template #label>
-        <div @mouseover="clickInput">
+        <div @mouseover="$refs.listNameInput.click()">
           <InputBtn
             ref="listNameInput"
             text="输入歌单名"
             :validator="null"
-            @res="finishAddNewList"
+            @res="listNameInputResHandler"
             style="width: 5em"
           ></InputBtn>
         </div>
@@ -96,30 +97,31 @@ import VirtualListHead from "../base/VirtualListHead.vue";
 
 export default {
   name: "SongList",
+  components: {
+    InputBtn,
+    SongItem,
+    SongItemAddons,
+    VirtualList,
+    VirtualListHead,
+  },
   data() {
     return {
       addingNewList: false,
       addingNewListTempTabName: "temp-asdfjkadnv",
       activeTabName: "allSongs",
       lastTabName: "allSongs",
-      maxLen: 1,
       test: "noChecked",
     };
   },
-  components: {
-    InputBtn,
-    VirtualList,
-    SongItem,
-    VirtualListHead,
-    SongItemAddons,
-  },
   computed: {
     ...mapState(useSongListsStore, ["allLists", "targetList", "isInnerList"]),
-    ...mapState(usePlayingQStore, ["recent", "audio"]),
+
     nowList() {
-      if (this.activeTabName === this.addingNewListTempTabName)
-        return this.targetList(this.lastTabName);
-      return this.targetList(this.activeTabName);
+      return this.targetList(
+        this.activeTabName === this.addingNewListTempTabName
+          ? this.lastTabName
+          : this.activeTabName
+      );
     },
     nowListSongs() {
       return [...this.nowList.values()];
@@ -127,21 +129,22 @@ export default {
   },
   methods: {
     ...mapActions(useSongListsStore, [
+      "putIntoList",
       "delFromList",
-      "clearList",
+      "clearList", // TODO
       "getAllSongsFromCloud",
       "addNewList",
       "delList",
       "callModifyDialog",
     ]),
-    ...mapActions(usePlayingQStore, ["play", "addNextPlay", "addQueuePlay"]),
-    removeTab(name) {
+    ...mapActions(usePlayingQStore, ["play", "addNextPlay", "addQueuePlay"]), // TODO
+    tabRemoveHandler(name) {
       let i = this.allLists.indexOf(name);
       this.delList(name);
       if (this.activeTabName === name)
         this.activeTabName = this.allLists[i] || this.allLists[i - 1];
     },
-    toAddNewList() {
+    tabAddHandler() {
       !this.addingNewList && (this.addingNewList = true);
       this.lastTabName = this.activeTabName;
       this.activeTabName = this.addingNewListTempTabName;
@@ -149,16 +152,20 @@ export default {
         this.$refs.listNameInput.click();
       }, 1000); // 等 el-tabs 模拟滚动结束再触发点击
     },
-    clickInput() {
-      this.$refs.listNameInput.click();
-    },
-    finishAddNewList(name) {
+    listNameInputResHandler(name) {
       this.addingNewList = false;
       this.activeTabName = this.lastTabName;
       if (!name.length) return;
       this.addNewList(name);
       this.activeTabName = name;
     },
+    async cloudDownFunc() {
+      let k = 0;
+      for (let song of this.$refs[this.activeTabName][0].popCheckedItems()) {
+        if ((await song.fetch()) instanceof Blob) console.log(++k);
+      }
+      return k;
+    }, // TODO
   },
   setup() {
     let clickAddIcon;

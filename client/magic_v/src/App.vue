@@ -11,48 +11,30 @@
 
 <script>
 /* eslint-disable */
-import { defineAsyncComponent } from "vue";
-import LoginOrRegister from "./components/loginOrRegister";
-import SongList from "./components/SongList";
-import LyricFall from "./components/LyricFall";
-const PlayBar = defineAsyncComponent(() => import("./components/PlayBar"));
-const AddTo = defineAsyncComponent(() => import("./components/AddTo"));
+import LoginOrRegister from "./components/loginOrRegister.vue";
+import SongList from "./components/SongList.vue";
+import LyricFall from "./components/LyricFall.vue";
+import PlayBar from "./components/PlayBar.vue";
+import AddTo from "./components/AddTo.vue";
 
 export default {
   name: "App",
+  components: {
+    LoginOrRegister,
+    SongList,
+    LyricFall,
+    PlayBar,
+    AddTo,
+  },
   data() {
     return {
       test: true,
       playBarH: "3rem",
     };
   },
-  components: {
-    SongList,
-    LoginOrRegister,
-    PlayBar,
-    LyricFall,
-    AddTo,
-  },
 };
 </script>
 
 <style lang="scss">
-*,
-*::before,
-*::after {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-.myWindow {
-  width: 100%;
-  height: v-bind("'calc(100vh - ' + playBarH + ')'");
-  position: absolute;
-  top: 0;
-  left: 0;
-  background: #fff;
-}
-.hide-scrollbar::-webkit-scrollbar {
-  display: none;
-}
+@import "style/index.scss";
 </style>

@@ -25,11 +25,4 @@ module.exports = defineConfig({
       }),
     ],
   },
-  css: {
-    loaderOptions: {
-      scss: {
-        additionalData: '@import "@/style/index.scss";'
-      }
-    }
-  }
 })

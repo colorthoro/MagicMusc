@@ -1,5 +1,9 @@
 <template>
-  <div class="song-item" @click.stop="playAble && play(song)">
+  <div
+    class="song-item"
+    :class="{ 'active-red': audio && song.sameWith(recent) }"
+    @click.stop="playAble && play(song)"
+  >
     <FlowText class="name" :text="song.name"></FlowText>
     <FlowText class="author" :text="song.author" v-if="showAuthor"></FlowText>
     <SongItemAddons
@@ -15,6 +19,9 @@
           },
         },
         plus: { need: true, func: () => callModifyDialog([song]) },
+        more: {
+          need: true,
+        },
         heart: {
           need: true,
           style: {
@@ -33,13 +40,17 @@
 </template>
 
 <script>
-import FlowText from "./FlowText.vue";
-import SongItemAddons from "./SongItemAddons.vue";
 import { mapActions, mapState } from "pinia";
+import { Song } from "../tools/songsCache";
 import usePlayingQStore from "../store/playingQ";
 import useSongListsStore from "../store/songLists";
-import { Song } from "../tools/songsCache";
+import FlowText from "./FlowText.vue";
+import SongItemAddons from "./SongItemAddons.vue";
 export default {
+  components: {
+    FlowText,
+    SongItemAddons,
+  },
   props: {
     song: {
       type: Song,
@@ -73,6 +84,7 @@ export default {
   },
   computed: {
     ...mapState(useSongListsStore, ["targetList"]),
+    ...mapState(usePlayingQStore, ["recent", "audio"]),
     isLiked() {
       return this.targetList("liked").get(this.song.file_id);
     },
@@ -87,10 +99,6 @@ export default {
   },
   beforeUnmount() {
     console.log("bye songItem");
-  },
-  components: {
-    FlowText,
-    SongItemAddons,
   },
 };
 </script>

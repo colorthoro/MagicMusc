@@ -18,13 +18,14 @@
     <div class="list" v-show="listOrHistory === 1">
       <el-auto-resizer>
         <template #default="{ height }">
-          <VirtualList :height="height" :list="playingQ" id_field="file_id">
+          <VirtualList
+            :height="height"
+            :list="playingQ"
+            id_field="file_id"
+            :needCheck="false"
+          >
             <template #default="{ item: song }">
-              <SongItem
-                :song="song"
-                :del="del"
-                :class="{ 'active-red': audio && song.sameWith(recent) }"
-              />
+              <SongItem :song="song" :del="del" />
             </template>
           </VirtualList>
         </template>
@@ -33,14 +34,14 @@
     <div class="list" v-show="listOrHistory === 2">
       <el-auto-resizer>
         <template #default="{ height }">
-          <VirtualList :height="height" :list="historyList" id_field="file_id">
+          <VirtualList
+            :height="height"
+            :list="historyList"
+            id_field="file_id"
+            :needCheck="false"
+          >
             <template #default="{ item: song }">
-              <SongItem
-                :song="song"
-                :showCnt="true"
-                :delAble="false"
-                :class="{ 'active-red': audio && song.sameWith(recent) }"
-              />
+              <SongItem :song="song" :showCnt="true" :delAble="false" />
             </template>
           </VirtualList>
         </template>
@@ -52,24 +53,19 @@
 <script>
 import { mapState, mapActions } from "pinia";
 import usePlayingQStore from "../store/playingQ";
-import SongItem from "../base/SongItem";
+import SongItem from "../base/SongItem.vue";
 import VirtualList from "../base/VirtualList.vue";
 export default {
+  components: { SongItem, VirtualList },
   data() {
     return {
       listOrHistory: 1,
     };
   },
   computed: {
-    ...mapState(usePlayingQStore, [
-      "audio",
-      "historyList",
-      "playingQ",
-      "recent",
-    ]),
+    ...mapState(usePlayingQStore, ["historyList", "playingQ"]),
   },
   methods: { ...mapActions(usePlayingQStore, ["del"]) },
-  components: { SongItem, VirtualList },
 };
 </script>
 

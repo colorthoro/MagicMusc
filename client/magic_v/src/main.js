@@ -68,6 +68,7 @@ import {
     faCheck, faXmark,  // 勾 叉
     faTrashArrowUp, // 恢复
     faCloudArrowDown,  // 云下载
+    faEllipsisVertical,
 } from '@fortawesome/free-solid-svg-icons'
 import {
     faCircleXmark,
@@ -80,7 +81,7 @@ library.add(
     faVolumeXmark, faVolumeOff, faVolumeLow, faVolumeHigh,
     faBars, faHeart, faCircleXmark, faXmark,
     faPlus, faCirclePlus, faTrashArrowUp, faListCheck,
-    faCheck, faCloudArrowDown
+    faCheck, faCloudArrowDown, faEllipsisVertical
 );
 app.component('font-awesome-icon', FontAwesomeIcon)
     .component('font-awesome-layers', FontAwesomeLayers)
