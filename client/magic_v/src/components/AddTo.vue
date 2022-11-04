@@ -7,19 +7,21 @@
     align-center
     center
   >
-    <el-scrollbar height="10em">
+    <el-scrollbar max-height="40vh">
       <el-checkbox-group class="vertical-center-flex" v-model="checkedList">
         <el-checkbox
           v-for="list of addableLists"
           :label="list"
           :key="list"
           border
-        />
+        >
+          {{ isInnerList(list) || list }}
+        </el-checkbox>
       </el-checkbox-group>
     </el-scrollbar>
     <template #footer>
       <div>
-        <el-scrollbar height="2em">
+        <el-scrollbar style="margin-bottom: 20px" max-height="5em">
           <li
             class="sipName"
             v-for="song of modifyDialog.targetSongs"
@@ -28,13 +30,17 @@
             {{ song.name }}
           </li>
         </el-scrollbar>
-        <span class="info" v-if="modifyDialog.targetSongs.length > 1">
-          注意，选中多个歌曲后，只会将这些歌曲新增到选中的歌单，而不会依据此页面从歌单删除。
-        </span>
         <el-button @click="visible = false">取消</el-button>
-        <el-button type="primary" @click="confirm" :loading="moving">
-          确定
-        </el-button>
+        <el-tooltip effect="customized" :disabled="singleSong">
+          <template #content>
+            <span class="info">
+              注意，选中了多个歌曲后，只会将这些歌曲新增到选中的歌单，而不会依据此页面从歌单删除。
+            </span>
+          </template>
+          <el-button type="primary" @click="confirm" :loading="moving">
+            确定
+          </el-button>
+        </el-tooltip>
       </div>
     </template>
   </el-dialog>
@@ -64,6 +70,9 @@ export default {
         this.modifyDialog.need = val;
       },
     },
+    singleSong() {
+      return this.modifyDialog.targetSongs.length <= 1;
+    },
   },
   methods: {
     ...mapActions(useSongListsStore, ["syncTags"]),
@@ -72,7 +81,7 @@ export default {
       await this.syncTags(
         this.modifyDialog.targetSongs,
         this.checkedList,
-        this.modifyDialog.targetSongs.length === 1
+        this.singleSong
       );
       this.moving = false;
       this.visible = false;
@@ -92,6 +101,10 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.info {
+  display: inline-block;
+  max-width: 50vw;
+}
 .sipName {
   width: 100%;
   overflow: hidden;

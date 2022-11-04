@@ -1,5 +1,5 @@
 <template>
-  <div class="container">
+  <div class="container cell-transparent">
     <div class="song">{{ nowSentence }}</div>
     <div class="controlls">
       <font-awesome-icon
@@ -120,7 +120,6 @@
 import { mapState, mapWritableState, mapActions } from "pinia";
 import usePlayingQStore from "../store/playingQ";
 import useLyricStore from "../store/lyric";
-import { formalTime } from "../tools/others";
 import { defineAsyncComponent } from "vue";
 const PlayList = defineAsyncComponent(() => import("./PlayList"));
 const ProgressSlider = defineAsyncComponent(() =>
@@ -171,7 +170,6 @@ export default {
   },
   methods: {
     ...mapActions(usePlayingQStore, ["onOff", "next", "last"]),
-    formalTime,
     unmountList() {
       this.timeout = setTimeout(() => (this.callPlayList = false), 3000);
     },
@@ -202,7 +200,6 @@ export default {
   width: 100%;
   /* height: 3rem; */
   z-index: 99;
-  @extend .cell-transparent;
 }
 .song {
   display: flex;

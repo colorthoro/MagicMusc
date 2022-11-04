@@ -26,7 +26,6 @@
 </template>
 
 <script>
-import { isMobile } from "../tools/others";
 export default {
   data() {
     return {
@@ -79,7 +78,7 @@ export default {
       },
     },
     showProgressBtn() {
-      return isMobile() || this.onBar || this.dragEffect;
+      return this.isMobile() || this.onBar || this.dragEffect;
     },
   },
   methods: {
