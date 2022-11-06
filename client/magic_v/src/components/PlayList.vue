@@ -23,6 +23,7 @@
             :list="playingQ"
             id_field="file_id"
             :needCheck="false"
+            ref="playing-vlist"
           >
             <template #default="{ item: song }">
               <SongItem :song="song" :del="del" />
@@ -30,6 +31,11 @@
           </VirtualList>
         </template>
       </el-auto-resizer>
+      <font-awesome-icon
+        class="pos red-hover"
+        icon="fa-solid fa-crosshairs"
+        @click="$refs['playing-vlist'].scrollTo(recent)"
+      />
     </div>
     <div class="list" v-show="listOrHistory === 2">
       <el-auto-resizer>
@@ -63,9 +69,11 @@ export default {
     };
   },
   computed: {
-    ...mapState(usePlayingQStore, ["historyList", "playingQ"]),
+    ...mapState(usePlayingQStore, ["historyList", "playingQ", "recent"]),
   },
-  methods: { ...mapActions(usePlayingQStore, ["del"]) },
+  methods: {
+    ...mapActions(usePlayingQStore, ["del"]),
+  },
 };
 </script>
 
@@ -82,6 +90,15 @@ export default {
     width: 100%;
     height: 90%;
     cursor: pointer;
+    position: relative;
+    .pos {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      font-size: 20px;
+      background-color: rgba(255, 255, 255, 0.7);
+      border-radius: 50%;
+    }
   }
 }
 </style>

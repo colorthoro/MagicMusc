@@ -1,5 +1,5 @@
 <template>
-  <el-scrollbar @scroll="scrollHandler">
+  <el-scrollbar ref="scroller" @scroll="scrollHandler">
     <div
       class="total-height-supporter"
       style="position: relative"
@@ -37,6 +37,7 @@
 </template>
 
 <script>
+import { smoothCloser, sleep } from "../tools/others";
 export default {
   data() {
     return {
@@ -104,6 +105,18 @@ export default {
       let res = Array.from(this.checkedList);
       this.checkedList.clear();
       return res;
+    },
+    async scrollTo(item) {
+      let i = this.list.indexOf(item);
+      if (i !== -1) {
+        let closer = smoothCloser(this.startIndex, i);
+        let step = closer.next();
+        while (!step.done) {
+          this.$refs.scroller.setScrollTop(step.value * this.itemHeight);
+          step = closer.next();
+          await sleep(50);
+        }
+      } else console.log("item not found in this vlist", item);
     },
   },
   watch: {

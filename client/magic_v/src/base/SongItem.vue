@@ -47,6 +47,7 @@ import useSongListsStore from "../store/songLists";
 import FlowText from "./FlowText.vue";
 import SongItemAddons from "./SongItemAddons.vue";
 export default {
+  name: "SongItem",
   components: {
     FlowText,
     SongItemAddons,

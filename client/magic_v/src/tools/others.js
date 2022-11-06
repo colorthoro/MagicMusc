@@ -21,3 +21,19 @@ function isMobileMaker() {
     };
 }
 export const isMobile = isMobileMaker();
+
+export function* smoothCloser(nowV, targetV, step = 1, skipTimes = 5) {
+    let len = Math.abs(targetV - nowV), skip = step * skipTimes;
+    if (len > skip)
+        yield nowV = nowV < targetV ? targetV - skip : targetV + skip;
+    while (nowV < targetV) {
+        yield nowV = Math.min(nowV + step, targetV);
+    }
+    while (nowV > targetV) {
+        yield nowV = Math.max(nowV - step, targetV);
+    }
+}
+
+export function sleep(t) {
+    return new Promise(ok => setTimeout(ok, t));
+}
