@@ -127,6 +127,9 @@ export default {
       this.$refs.progress.style.width = this.percent * 100 + "%";
     },
   },
+  beforeUnmount() {
+    if (this.timeout) clearTimeout(this.timeout);
+  },
 };
 </script>
 
