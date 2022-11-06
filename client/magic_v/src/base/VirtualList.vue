@@ -109,12 +109,17 @@ export default {
     async scrollTo(item) {
       let i = this.list.indexOf(item);
       if (i !== -1) {
-        let closer = smoothCloser(this.startIndex, i);
+        let closer = smoothCloser(
+          this.startIndex * this.itemHeight,
+          i * this.itemHeight,
+          10,
+          20
+        );
         let step = closer.next();
         while (!step.done) {
-          this.$refs.scroller.setScrollTop(step.value * this.itemHeight);
+          this.$refs.scroller.setScrollTop(step.value);
           step = closer.next();
-          await sleep(50);
+          await sleep(10);
         }
       } else console.log("item not found in this vlist", item);
     },
