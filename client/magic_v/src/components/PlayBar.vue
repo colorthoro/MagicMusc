@@ -227,6 +227,7 @@ export default {
     width: 50px;
     height: 50px;
     border-radius: 10px;
+    margin-right: 20px;
     overflow: hidden;
     img {
       width: 100%;
