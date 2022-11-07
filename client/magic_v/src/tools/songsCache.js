@@ -3,7 +3,7 @@ import {
     apiGetLyric, apiGetLyricFromYun,
     apiGetDetail, apiGetPic
 } from "../tools/api";
-import { findAllResultSongs, splitSongName } from './songBinder';
+import { findAllResultSongs, splitSongName } from './songSuggest';
 import Dexie from "dexie";
 
 export const db = new Dexie("magic_music");
