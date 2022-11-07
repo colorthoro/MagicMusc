@@ -29,11 +29,6 @@ app.use(pinia);  // 将 pinia 注册为 Vue app 插件
 import VueCookies from 'vue-cookies'
 app.use(VueCookies);  // 将 VueCookies 注册为 Vue app 插件
 
-
-/** 使用 Dexie 操作 IndexedDB 存取音乐文件的方法 */
-import { fetchMusic, dbPut, dbGet } from './tools/songsCache'
-/** 将音乐存取方法集合为对象添加到 app 的全局配置对象中 */
-app.config.globalProperties.songDb = { fetchMusic, dbPut, dbGet };
 import { fixedInt, formalTime, isMobile } from './tools/others';
 app.config.globalProperties.fixedInt = fixedInt;
 app.config.globalProperties.formalTime = formalTime;

@@ -1,6 +1,11 @@
 <template>
   <div class="container cell-transparent">
-    <div class="song">{{ nowSentence }}</div>
+    <div class="song">
+      <div class="song-pic">
+        <img ref="songPic" />
+      </div>
+      {{ nowSentence }}
+    </div>
     <div class="controlls">
       <font-awesome-icon
         @click="last"
@@ -151,6 +156,7 @@ export default {
       "duration",
       "volume",
       "fetching",
+      "recent",
     ]),
     ...mapState(useLyricStore, ["nowSentence"]),
     volumeControll: {
@@ -182,6 +188,17 @@ export default {
       }
       this.callPlayList = true;
     },
+    async showSongPic() {
+      let imgBlob = await this.recent.fetchPicture();
+      let url = require("../assets/player_cover.png");
+      if (imgBlob) url = URL.createObjectURL(imgBlob);
+      this.$refs.songPic.src = url;
+    },
+  },
+  watch: {
+    recent() {
+      this.showSongPic();
+    },
   },
   beforeUnmount() {
     clearTimeout(this.timeout);
@@ -206,6 +223,16 @@ export default {
   padding-left: 1rem;
   width: 40%;
   overflow: hidden;
+  .song-pic {
+    width: 50px;
+    height: 50px;
+    border-radius: 10px;
+    overflow: hidden;
+    img {
+      width: 100%;
+      height: 100%;
+    }
+  }
 }
 .controlls {
   display: flex;

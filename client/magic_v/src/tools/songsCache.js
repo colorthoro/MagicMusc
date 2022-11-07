@@ -1,44 +1,16 @@
-import { apiDownloadMusic, apiGetFileInfo } from "../tools/api";
+import {
+    apiDownloadMusic, apiGetFileInfo,
+    apiGetLyric, apiGetLyricFromYun,
+    apiGetDetail, apiGetPic
+} from "../tools/api";
+import { findAllResultSongs, splitSongName } from './songBinder';
 import Dexie from "dexie";
 
-const db = new Dexie("magic_music");
+export const db = new Dexie("magic_music");
 db.version(1).stores({
-    songs: "++id, &content_hash"
+    songs: "++id, &content_hash",
+    pics: "++id, &song_hash"
 });
-
-export async function fetchMusic(hash, url) {
-    let test = await dbGet(hash);
-    if (test) {
-        console.log('已从本地IndexedDB取得文件', hash, test);
-        return test.file;
-    }
-    let res = await apiDownloadMusic(hash, url);
-    if (res.data.type !== 'application/octet-stream') {
-        throw await res.data.text();
-    }
-    console.log('获取文件成功，准备存入IndexedDB', hash, res.data);
-    dbPut(hash, res.data);
-    return res.data;
-}
-
-export async function dbPut(content_hash, blob) {
-    if (await dbGet(content_hash)) {
-        console.log('already in the IndexedDB!', blob);
-        return;
-    }
-    await db.songs.put({
-        content_hash: content_hash,
-        file: blob,
-    });
-    console.log('successed to put it into IndexedDB', blob);
-}
-
-export async function dbGet(content_hash) {
-    let res = await db.songs.get({ content_hash: content_hash });
-    if (res) console.log('successed to get it from IndexedDB', res);
-    else console.log('not in the IndexedDB!');
-    return res;
-}
 
 export class Song {
     constructor(originObject) {
@@ -47,6 +19,7 @@ export class Song {
         this.tags = originObject.tags || [];
         this.lost = originObject.lost || false;
         this.cnt = originObject.cnt || 0;
+        this.netease_id = originObject.netease_id || '';
         this.lyric = originObject.lyric || '';
     }
     test(originObject, inject = false) {
@@ -72,17 +45,29 @@ export class Song {
         return (song instanceof Song) && (this.content_hash === song.content_hash);
     }
     async fetch() {
-        try {
-            let res = await fetchMusic(this.content_hash, this.download_url);
-            return res;
-        } catch (e) {
-            if (e === '无效下载链接') {
-                this.lost = true;
+        let hash = this.content_hash;
+        let url = this.download_url;
+        let test = await db.songs.get({ content_hash: this.content_hash });
+        if (test) {
+            console.log('已从本地IndexedDB取得文件', hash, test);
+            return test.file;
+        }
+        let res = await apiDownloadMusic(hash, url);
+        if (res.data.type !== 'application/octet-stream') {
+            if (await res.data.text() === '无效下载链接') {
                 console.error('无效下载链接');
+                this.lost = true;
                 this.lost = ! await this.updateUrl();
                 if (!this.lost) return await this.fetch();
             }
+            return;
         }
+        console.log('获取文件成功，准备存入IndexedDB', hash, res.data);
+        db.songs.put({
+            content_hash: this.content_hash,
+            file: res.data,
+        });
+        return res.data;
     }
     async updateUrl() {
         // 根据file_id重新获取文件信息，比对download_url，不同则赋值，并改变this.lost
@@ -95,8 +80,55 @@ export class Song {
         }
         return false;
     }
+    async bindNeteaseId(refresh = false) {
+        if (!refresh && this.netease_id) {
+            console.log('bindNeteaseId 已存在', this.netease_id);
+            return true
+        }
+        console.log('bindNeteaseId 正在查询网易云音乐对应歌曲id', this);
+        let { best, resultSongs } = await findAllResultSongs(splitSongName(this.name));
+        let bestMatch = resultSongs[best];
+        if (bestMatch) {
+            console.log("最终匹配：", bestMatch);
+            this.netease_id = bestMatch.id;
+            return true;
+        }
+        console.log('bindNeteaseId 查询网易云音乐对应歌曲id failed');
+        return false;
+    }
     fillLrc(lrc) {
         this.lyric = lrc;
+    }
+    async fetchLrc() {
+        if (this.lyric) return this.lyric;
+        console.log('在云盘查找歌词');
+        let res = (await apiGetLyricFromYun(this.name)).data;
+        if (res.length && res !== 'not found') {
+            this.lyric = res;
+            return this.lyric;
+        }
+        console.log('云盘未找到歌词');
+        if (! await this.bindNeteaseId()) return;
+        console.log('在网易云查找歌词');
+        let lrc = (await apiGetLyric(this.netease_id)).data.lrc.lyric;
+        console.log("得到歌词：", lrc);
+        this.lyric = lrc;
+        return this.lyric;
+    }
+    async fetchPicture() {
+        console.log('在 IndexedDB 查找歌曲对应封面');
+        let pic = await db.pics.get({ song_hash: this.content_hash });
+        if (pic) return pic.file;
+        console.log('IndexedDB 中没有歌曲对应封面');
+        if (! await this.bindNeteaseId()) return;
+        console.log('在网易云查找歌曲对应封面');
+        let res = await apiGetDetail(this.netease_id);
+        let url = res.data.songs[0].al.picUrl;
+        let picFile = (await apiGetPic(url)).data;
+        if (picFile) {
+            db.pics.put({ song_hash: this.content_hash, file: picFile });
+            return picFile;
+        }
     }
 }
 

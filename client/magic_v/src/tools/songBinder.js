@@ -1,4 +1,4 @@
-import { apiSuggestSongsInfo, apiGetLyric, apiGetLyricFromYun } from "./api";
+import { apiSuggestSongsInfo } from './api';
 
 export function splitSongName(fileName) {
     let splitPat = / *[-_.,，、/]+ */;
@@ -24,7 +24,8 @@ function findBestMatch(partlyResults, partlyKeys) {
     }
     return -1;
 }
-async function findAllResultSongs(keys) {
+
+export async function findAllResultSongs(keys) {
     let resultSongs = [], best = -1;
     for (let i = -1; i < keys.length; i++) {
         let key = i === -1 ? keys.join("+") : keys[i];
@@ -43,27 +44,16 @@ async function findAllResultSongs(keys) {
     }
     return { best, resultSongs };
 }
-export async function queryLyric(song) {
-    console.log('准备调用接口查询')
-    let keys = splitSongName(song.name);
-    let { best, resultSongs } = await findAllResultSongs(keys);
+
+export async function songBinder(song, refresh = false) {
+    if (!refresh && song.netease_id) return;
+    console.log('songBinder 正在查询网易云音乐对应歌曲id', song);
+    let { best, resultSongs } = await findAllResultSongs(splitSongName(song.name));
     let bestMatch = resultSongs[best];
     if (bestMatch) {
         console.log("最终匹配：", bestMatch);
-        let lrc = (await apiGetLyric(bestMatch.id)).data.lrc.lyric;
-        console.log("得到歌词：", lrc);
-        song.fillLrc(lrc);
+        song.netease_id = bestMatch.id;
         return true;
     }
     return false;
-}
-export async function queryLyricFromYun(song) {
-    let res = (await apiGetLyricFromYun(song.name)).data;
-    if (!res.length || res === 'not found') {
-        console.log('云上未找到歌词');
-        return false;
-    }
-    console.log('从云上找到歌词：', res);
-    song.fillLrc(res);
-    return true;
 }

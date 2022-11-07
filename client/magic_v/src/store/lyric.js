@@ -1,6 +1,5 @@
 import { defineStore, mapState } from "pinia";
 import usePlayingQStore from "../store/playingQ";
-import { queryLyric, queryLyricFromYun } from "../tools/lyricTool";
 
 
 const useLyricStore = defineStore("lyric", {
@@ -12,11 +11,7 @@ const useLyricStore = defineStore("lyric", {
         lrcRows() {
             if (!this.audio || !this.recent) {
                 return { rows: [], timePoint: [] };
-            } else if (!this.recent.lyric.length) {
-                queryLyricFromYun(this.recent).then(
-                    ok => !ok && queryLyric(this.recent),
-                    () => queryLyric(this.recent)
-                );
+            } else if (!this.recent.lyric.length && !this.recent.fetchLrc()) {
                 return { rows: [], timePoint: [] };
             }
 
