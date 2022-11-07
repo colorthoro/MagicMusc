@@ -37,3 +37,28 @@ export function* smoothCloser(nowV, targetV, step = 1, skipTimes = 5) {
 export function sleep(t) {
     return new Promise(ok => setTimeout(ok, t));
 }
+
+// export function oneWhileMaker(fn, ctx) {
+//     let fnPromise = null;
+//     let waitingCnt = 0;
+//     let inner = async () => {
+//         if (fnPromise) {
+//             let id = waitingCnt++;
+//             console.log('A same res func had been called before,',
+//                 'I just need to wait for his notice.', id);
+//             let fnRes = await fnPromise;
+//             waitingCnt--;
+//             if (waitingCnt === 0) {  // 不用担心资源竞争，因为JS异步本质上只是分批同步，而非并行。
+//                 console.log('I am the last waiting func.', id);
+//                 fnPromise = null;
+//             }
+//             return fnRes;
+//         }
+//         let notify = null;
+//         fnPromise = new Promise(res => notify = res);
+//         let fnRes = await fn.bind(ctx)(arguments);
+//         notify(fnRes);
+//         return fnRes;
+//     }
+//     return inner;
+// }

@@ -153,6 +153,7 @@ export default defineStore('playingQ', {
             });
         },
         async _play(songOrSongs) {
+            // 准备audio
             if (!(this.audio instanceof Audio)) {
                 var audio = new Audio();
                 this._initAudio(audio);
@@ -161,6 +162,8 @@ export default defineStore('playingQ', {
                 this.audio.pause();
                 URL.revokeObjectURL(this.audio.src);
             }
+
+            // 确定歌曲，避免重复
             songOrSongs && this._addToPlaying(songOrSongs);
             let targetSong = this.nowToPlay;
             if (!targetSong) { console.error('请先选择歌曲吧！'); return; }
@@ -168,6 +171,8 @@ export default defineStore('playingQ', {
                 console.log('Fetching the song, please wait...');
                 return;
             }
+
+            // 下载歌曲
             console.log('准备获取', targetSong);
             let _playId = ++this.fetching;
             let blob;
@@ -179,6 +184,8 @@ export default defineStore('playingQ', {
                 this.failed = true;
                 return;
             }
+
+            // 播放歌曲
             if (this.fetching === _playId) {
                 this.fetching = 0;
                 console.log(_playId, ' 即将开始播放 ', blob);
@@ -188,7 +195,7 @@ export default defineStore('playingQ', {
                 this.audio.controls = true;
                 this.audio.play();
             } else {
-                console.log(_playId, ' 播放被抢占，错过歌曲：', targetSong);
+                console.log(_playId, '播放被其它歌曲抢占，错过歌曲', targetSong);
             }
         },
         onOff(_, toStart) {  // 忽略在vue模板里直接使用时自动传递的事件对象，方便使用

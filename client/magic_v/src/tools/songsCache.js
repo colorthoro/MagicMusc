@@ -21,6 +21,7 @@ export class Song {
         this.cnt = originObject.cnt || 0;
         this.netease_id = originObject.netease_id || '';
         this.lyric = originObject.lyric || '';
+        this.oneWhileData = {};
     }
     test(originObject, inject = false) {
         let list = [
@@ -40,6 +41,16 @@ export class Song {
             if (inject) this[key] = originObject[key];
         }
         return valid;
+    }
+    oneWhileManager(funcName, ...args) {  // 避免异步方法短时间内被多次异步调用
+        if (funcName === 'oneWhileManager') return;
+        if (!this.oneWhileData[funcName]) {
+            this.oneWhileData[funcName] = this[funcName](...args).then(res => {
+                delete this.oneWhileData[funcName];
+                return res;
+            });
+        } else console.info('等待前一个异步调用结果中，调用方法：', funcName);
+        return this.oneWhileData[funcName];
     }
     sameWith(song) {
         return (song instanceof Song) && (this.content_hash === song.content_hash);
@@ -108,7 +119,7 @@ export class Song {
             return this.lyric;
         }
         console.log('云盘未找到歌词');
-        if (! await this.bindNeteaseId()) return;
+        if (! await this.oneWhileManager('bindNeteaseId')) return;
         console.log('在网易云查找歌词');
         let lrc = (await apiGetLyric(this.netease_id)).data.lrc.lyric;
         console.log("得到歌词：", lrc);
@@ -120,7 +131,7 @@ export class Song {
         let pic = await db.pics.get({ song_hash: this.content_hash });
         if (pic) return pic.file;
         console.log('IndexedDB 中没有歌曲对应封面');
-        if (! await this.bindNeteaseId()) return;
+        if (! await this.oneWhileManager('bindNeteaseId')) return;
         console.log('在网易云查找歌曲对应封面');
         let res = await apiGetDetail(this.netease_id);
         let url = res.data.songs[0].al.picUrl;
