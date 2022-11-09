@@ -47,15 +47,6 @@ $pretty--color-primary: red;
     box-sizing: border-box;
 }
 
-.myWindow {
-    width: 100%;
-    height: v-bind("'calc(100vh - ' + playBarH + ')'");
-    position: absolute;
-    top: 0;
-    left: 0;
-    background: #fff;
-}
-
 .hide-scrollbar::-webkit-scrollbar {
     display: none;
 }

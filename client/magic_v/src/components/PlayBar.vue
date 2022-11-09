@@ -1,8 +1,8 @@
 <template>
-  <div class="container cell-transparent">
+  <div class="container">
     <div class="song">
       <div class="song-pic">
-        <img ref="songPic" />
+        <img :src="picUrlReciver.url" />
       </div>
       {{ nowSentence }}
     </div>
@@ -126,6 +126,7 @@ import { defineAsyncComponent } from "vue";
 import { mapState, mapWritableState, mapActions } from "pinia";
 import usePlayingQStore from "../store/playingQ";
 import useLyricStore from "../store/lyric";
+import usePicsStore from "../store/pics";
 import ProgressSlider from "../base/ProgressSlider.vue";
 const PlayList = defineAsyncComponent(() => import("./PlayList.vue"));
 
@@ -145,6 +146,7 @@ export default {
     return {
       timeout: null,
       callPlayList: false,
+      picUrlReciver: { id: 0, url: null },
     };
   },
   computed: {
@@ -178,6 +180,7 @@ export default {
   },
   methods: {
     ...mapActions(usePlayingQStore, ["onOff", "next", "last"]),
+    ...mapActions(usePicsStore, ["getPicUrl", "losePicUrl"]),
     unmountList() {
       this.timeout = setTimeout(() => (this.callPlayList = false), 3000);
     },
@@ -188,19 +191,18 @@ export default {
       }
       this.callPlayList = true;
     },
-    async showSongPic() {
-      let imgBlob = await this.recent.fetchPicture();
-      let url = require("../assets/player_cover.png");
-      if (imgBlob) url = URL.createObjectURL(imgBlob);
-      this.$refs.songPic.src = url;
-    },
   },
   watch: {
-    recent() {
-      this.showSongPic();
+    recent: {
+      immediate: true,
+      handler() {
+        this.losePicUrl(this.picUrlReciver.url);
+        this.getPicUrl(this.recent, this.picUrlReciver);
+      },
     },
   },
   beforeUnmount() {
+    delete this.picUrlReciver.id;
     clearTimeout(this.timeout);
   },
 };
@@ -226,12 +228,17 @@ export default {
   .song-pic {
     width: 50px;
     height: 50px;
+    flex-shrink: 0;
     border-radius: 10px;
     margin-right: 20px;
     overflow: hidden;
     img {
       width: 100%;
       height: 100%;
+      object-fit: cover;
+      &:hover {
+        filter: blur(5px);
+      }
     }
   }
 }

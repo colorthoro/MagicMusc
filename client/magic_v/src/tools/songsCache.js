@@ -21,6 +21,7 @@ export class Song {
         this.cnt = originObject.cnt || 0;
         this.netease_id = originObject.netease_id || '';
         this.lyric = originObject.lyric || '';
+        this.picId = -1;
         this.oneWhileData = {};
     }
     test(originObject, inject = false) {
@@ -45,10 +46,8 @@ export class Song {
     oneWhileManager(funcName, ...args) {  // 避免异步方法短时间内被多次异步调用
         if (funcName === 'oneWhileManager') return;
         if (!this.oneWhileData[funcName]) {
-            this.oneWhileData[funcName] = this[funcName](...args).then(res => {
-                delete this.oneWhileData[funcName];
-                return res;
-            });
+            let justTransfer = okOrno => { delete this.oneWhileData[funcName]; return okOrno; }
+            this.oneWhileData[funcName] = this[funcName](...args).then(justTransfer, justTransfer);
         } else console.info('等待前一个异步调用结果中，调用方法：', funcName);
         return this.oneWhileData[funcName];
     }
@@ -133,13 +132,13 @@ export class Song {
         console.log('IndexedDB 中没有歌曲对应封面');
         if (! await this.oneWhileManager('bindNeteaseId')) return;
         console.log('在网易云查找歌曲对应封面');
-        let res = await apiGetDetail(this.netease_id);
-        let url = res.data.songs[0].al.picUrl;
-        let picFile = (await apiGetPic(url)).data;
-        if (picFile) {
+        let url;
+        try {
+            url = (await apiGetDetail(this.netease_id)).data.songs[0].al.picUrl;
+            let picFile = (await apiGetPic(url, 300)).data;
             db.pics.put({ song_hash: this.content_hash, file: picFile });
             return picFile;
-        }
+        } catch (e) { console.error(e); return; }
     }
 }
 
@@ -164,7 +163,7 @@ export function reviver(key, value) {
         }
         if (value.dataType === 'SongIned') {
             value.dataType = 'SongOuted';
-            Object.setPrototypeOf(value, Song.prototype);
+            value = new Song(value);
             return value;
         }
     }
