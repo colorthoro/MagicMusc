@@ -10,7 +10,7 @@ import random, time, os
 app = Flask(__name__)
 ali = Aligo()
 
-musicPattern = re.compile(r'(.+\.(mp3|avi))', re.I)
+musicPattern = re.compile(r'(.+\.(mp3|avi|flac))', re.I)
 with open('secret.json', 'r', encoding='utf-8') as f:
     secret = json.load(f)
 
@@ -55,8 +55,8 @@ def login():
 
 @app.route('/scanMusic')
 def scanMuic():
-    # with open('test.json','r', encoding='utf-8') as f:
-    #     return jsonify(json.load(f))
+    with open('test.json','r', encoding='utf-8') as f:
+        return jsonify(json.load(f))
     q = Queue()
     q.put('root')
     res = list()
@@ -69,27 +69,34 @@ def scanMuic():
                     q.put(item.file_id)
                 elif musicPattern.match(item.name):
                     print(item)
-                    res.append({
-                        'name': item.name,
-                        'mime_extension': item.mime_extension,
-                        'file_id': item.file_id,
-                        'parent_file_id': item.parent_file_id,
-                        'status': item.status, 
-                        'content_hash': item.content_hash,
-                        'download_url': item.download_url,
-                        'size': item.size,
-                        'trashed': item.trashed,
-                    })
+                    res.append(item)
+                    # {
+                    #     'name': item.name,
+                    #     'mime_extension': item.mime_extension,
+                    #     'file_id': item.file_id,
+                    #     'parent_file_id': item.parent_file_id,
+                    #     'status': item.status, 
+                    #     'content_hash': item.content_hash,
+                    #     'download_url': item.download_url,
+                    #     'size': item.size,
+                    #     'trashed': item.trashed,
+                    # }
             sleep(1)
         except Exception as e:
             print(e)
     return jsonify(res)
 
 
-@app.route('/dw', methods=['post'])
+@app.route('/getf')
+def getf():
+    file_id = request.args.get('file_id')
+    f = ali.get_file(file_id=file_id)
+    return jsonify(f)
+
+@app.route('/dw')
 def cache():
-    hash = request.json['hash']
-    url = request.json['url']
+    hash = request.args.get('hash')
+    url = request.args.get('url')
     file_path = os.path.join(os.getcwd(), hash)
     try:
         ali.download_file(file_path=file_path, url=url)
@@ -106,5 +113,19 @@ def cache():
                     break
                 yield chunk
     return Response(send_chunk(), content_type='application/octet-stream')
+
+@app.route('/getLrc')
+def getLrc():
+    name = request.args.get('name')
+    name = name.split('.')[0]
+    file = ali.search_files(name + '.txt')
+    if len(file)==0:
+        return jsonify('not found')
+    ali.download_file(file=file[0])
+    lrc = ''
+    with open(name+'.txt', 'r', encoding='utf-8') as f:
+        lrc = ''.join(f.readlines())
+    print(lrc)
+    return jsonify(lrc)
 
 app.run()
