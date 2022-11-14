@@ -19,6 +19,7 @@ export default defineStore('pics', {  // 避免重复创建歌曲图片对象
     actions: {
         getPicUrl(song, reciver) {
             // reciver:{id, url}, id用来保证这个reciver多次异步获取时只取到最新的
+            if (!song) return Promise.resolve(this.defaultPicUrl);
             let rId = ++reciver.id;
             let urlP = this.picInfo(song.picId)?.urlP;
             if (!urlP) {
